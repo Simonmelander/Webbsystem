@@ -430,3 +430,5 @@ FodyWeavers.xsd
 WebApplication1/.vs/WebApplication1.slnx/v18/DocumentLayout.json
 *.cache
 *.vsidx
+.obj
+.cache
