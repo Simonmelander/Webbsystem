@@ -10,9 +10,9 @@ namespace ClassLibrary
     {
         [Key]
         public int Id { get; set; }
-        public List<Skill> Skills { get; set; }
-        public List<Education> Educations { get; set; }
-        public List<string> Experiences { get; set; }
+        public virtual ICollection<Skill> Skills { get; set; }
+        public virtual ICollection<Education> Educations { get; set; }
+        public virtual ICollection<string> Experiences { get; set; }
         public int UserId { get; set; }
         
         // [ForeignKey(nameof(UserId))]
