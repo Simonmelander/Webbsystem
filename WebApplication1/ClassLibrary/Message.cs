@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+using WebApplication1.Models;
 
 namespace ClassLibrary
 {
@@ -23,12 +25,12 @@ namespace ClassLibrary
         public bool IsRead { get; set; } = false;
 
         public int SenderId { get; set; }
-        // [ForeignKey(nameof(SenderId))]
-        // public virtual User Sender { get; set; }
+        [ForeignKey(nameof(SenderId))]
+        public virtual User Sender { get; set; }
 
         public int ReceiverId { get; set; }
 
-        // [ForeignKey(nameof(ReceiverId))]
-        // public virtual User Receiver { get; set; }
+        [ForeignKey(nameof(ReceiverId))]
+        public virtual User Receiver { get; set; }
     }
 }
