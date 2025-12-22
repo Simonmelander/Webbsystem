@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
+using WebApplication1.Models;
 
 namespace ClassLibrary
 {
@@ -14,8 +12,7 @@ namespace ClassLibrary
         public virtual ICollection<Education> Educations { get; set; }
         public virtual ICollection<string> Experiences { get; set; }
         public int UserId { get; set; }
-        
-        // [ForeignKey(nameof(UserId))]
-        // public virtual User User { get; set; }
+        [ForeignKey(nameof(UserId))]
+        public virtual User User { get; set; }
     }
 }
