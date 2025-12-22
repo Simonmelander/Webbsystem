@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="CvProject.Models/CvProject.Models.csproj" />
+  <Project Path="CvProject.View/CvProject.View.csproj" />
+</Solution>
