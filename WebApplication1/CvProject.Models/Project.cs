@@ -14,5 +14,6 @@ namespace CvProject.Models
         [Required(ErrorMessage = "Du måste ange en beskrivning av projektet.")]
         public string Description { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public virtual ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
     }
 }
