@@ -11,7 +11,7 @@ namespace CvProject.Models
         public virtual ICollection<Skill> Skills { get; set; }
         public virtual ICollection<Education> Educations { get; set; }
         public virtual ICollection<Experience> Experiences { get; set; }
-        public int UserId { get; set; }
+        public String UserId { get; set; }
         [ForeignKey(nameof(UserId))]
         public virtual User User { get; set; }
     }
