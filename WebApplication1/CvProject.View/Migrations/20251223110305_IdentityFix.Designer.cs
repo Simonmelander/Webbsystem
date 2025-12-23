@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CvProject.View.Migrations
 {
     [DbContext(typeof(MyAppContext))]
-    [Migration("20251223103752_InitialIdentity")]
-    partial class InitialIdentity
+    [Migration("20251223110305_IdentityFix")]
+    partial class IdentityFix
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -513,7 +513,7 @@ namespace CvProject.View.Migrations
                     b.HasOne("CvProject.Models.User", "User")
                         .WithMany("ProjectUsers")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Project");

@@ -510,7 +510,7 @@ namespace CvProject.View.Migrations
                     b.HasOne("CvProject.Models.User", "User")
                         .WithMany("ProjectUsers")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Project");
