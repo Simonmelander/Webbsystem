@@ -33,6 +33,6 @@ namespace CvProject.Models
         
         [Display(Name = "Profilbild")]
         public string ProfilePictureUrl { get; set; }
-        public virtual ICollection<ProjectUser> ProjectUser { get; set; } = new List<ProjectUser>();
+        public virtual ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
     }
 }
