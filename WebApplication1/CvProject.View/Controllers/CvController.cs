@@ -36,12 +36,11 @@ namespace CvProject.View.Controllers
         }
 
         [HttpPost]
-        [HttpPost]
         public IActionResult Create(CvCreateViewModel model)
         {
             // Eftersom du inte har Titel eller UserId i formuläret än:
-            // Hämta UserId från inloggningen (hårdkodat till 1 tills vidare)
-            int currentUserId = 1;
+            // Hämta UserId från inloggningen (hårdkodat till "1" tills vidare)
+            string currentUserId = "1";
 
             // Vi måste städa bort tomma rader som användaren inte fyllde i
             // T.ex. om man lämnade "Skola" tomt, ska det inte sparas.
