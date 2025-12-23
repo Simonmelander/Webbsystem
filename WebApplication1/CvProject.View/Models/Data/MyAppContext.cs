@@ -37,7 +37,7 @@ namespace CvProject.View.Models.Data
 
             modelBuilder.Entity<ProjectUser>()
                 .HasOne(pu => pu.User)
-                .WithMany(u => u.ProjectUser)
+                .WithMany(u => u.ProjectUsers)
                 .HasForeignKey(pu => pu.UserId);
         }
         public DbSet<User> Users { get; set; } = default!;
