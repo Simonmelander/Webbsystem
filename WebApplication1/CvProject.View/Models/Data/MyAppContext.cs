@@ -22,7 +22,7 @@ namespace CvProject.View.Models.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Kopplingstabell ProjectUser (Många-till-många)
+            
             modelBuilder.Entity<ProjectUser>()
                 .HasKey(pu => new { pu.ProjectId, pu.UserId });
 
@@ -38,7 +38,7 @@ namespace CvProject.View.Models.Data
                 .HasForeignKey(pu => pu.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Hantera meddelanden för att undvika cirkulära beroenden vid radering
+            
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Sender)
                 .WithMany()
