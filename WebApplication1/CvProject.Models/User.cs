@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace CvProject.Models
 {
@@ -11,15 +12,16 @@ namespace CvProject.Models
         public string Name { get; set; } = string.Empty;
 
         [StringLength(100)]
+        [Display(Name = "Adress")]
         public string Address { get; set; } = string.Empty;
 
         [Display(Name = "Privat profil")]
-        public bool IsPrivate { get; set; }
+        public bool IsPrivate { get; set; } = false;
 
         [Display(Name = "Profilbild")]
         public string? ProfilePictureUrl { get; set; }
 
-        // Relation till kopplingstabellen
+        // Relationer
         public virtual ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
     }
 }
