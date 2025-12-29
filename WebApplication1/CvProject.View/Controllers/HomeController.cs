@@ -4,6 +4,8 @@ using CvProject.Models;
 using CvProject.View.Models.Data;
 using Microsoft.EntityFrameworkCore;
 using CvProject.View.Models;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CvProject.Controllers
 {
@@ -16,20 +18,23 @@ namespace CvProject.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var featured = await _context.Cvs
+                .Include(c => c.User)
+                .Where(c => c.User != null && !c.User.IsPrivate)
+                .OrderByDescending(c => c.Id)
+                .Take(5)
+                .ToListAsync();
+
+            var latestProject = await _context.Projects
+                .OrderByDescending(p => p.CreatedDate)
+                .FirstOrDefaultAsync();
+
             var vm = new HomeViewModel
             {
-                FeaturedCvs = _context.Cvs
-                    .Include(c => c.User)
-                    .Where(c => c.User != null && !c.User.IsPrivate) 
-                    .OrderByDescending(c => c.Id)
-                    .Take(5)
-                    .ToList(),
-
-                LatestProject = _context.Projects
-                    .OrderByDescending(p => p.CreatedDate)
-                    .FirstOrDefault()
+                FeaturedCvs = featured,
+                LatestProject = latestProject
             };
 
             return View(vm);
