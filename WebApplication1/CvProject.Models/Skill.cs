@@ -13,6 +13,6 @@ namespace CvProject.Models
         public string Name { get; set; }
         public int CvId { get; set; }
         [ForeignKey(nameof(CvId))]
-        public virtual Cv Cv { get; set; }
+        public virtual Cv? Cv { get; set; }
     }
 }
