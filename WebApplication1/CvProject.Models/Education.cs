@@ -20,13 +20,13 @@ namespace CvProject.Models
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         [StringLength(20)]
-        public string Grade { get; set; }
+        public string? Grade { get; set; }
         public string Description { get; set; }
 
         public int CvId { get; set; }
 
         [ForeignKey(nameof(CvId))]
-        public virtual Cv Cv { get; set; }
+        public virtual Cv? Cv { get; set; }
 
     }
 }

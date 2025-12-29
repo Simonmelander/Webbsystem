@@ -10,7 +10,7 @@ namespace CvProject.View.Models.Data
         {
         }
 
-        public DbSet<Cv> Cvs { get; set; }
+        public DbSet<CvProject.Models.Cv> Cvs { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Skill> Skills { get; set; }

@@ -1,0 +1,115 @@
+﻿@using CvProject.View.Models.CvViewModels
+@model CvCreateViewModel;
+
+<div class="container-lg">
+    <h1>Redigera CV</h1>
+    <div asp-validation-summary="All" class="text-danger"></div>
+</div>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <h3>Utbildningar</h3>
+    <div id="education-list">
+        @for (int i = 0; i < Model.Educations.Count; i++)
+        {
+            <div class="mb-3 border p-2">
+                <input type="hidden" asp-for="Educations[i].Id" />
+                <input type="hidden" asp-for="Educations[i].CvId" />
+
+                <div class="form-group">
+                    <label>Skola</label>
+                    <input asp-for="Educations[i].School" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label>Examen</label>
+                    <input asp-for="Educations[i].Degree" class="form-control" />
+                </div>
+
+                <div>
+                    <label>Ämne/Inriktning</label>
+                    <input asp-for="Educations[i].FieldOfStudy" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label>Beskrivning</label>
+                    <textarea asp-for="Educations[i].Description" class="form-control"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Startdatum</label>
+                    <input asp-for="Educations[i].StartDate" type="date" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label>Slutdatum</label>
+                    <input asp-for="Educations[i].EndDate" type="date" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label>Slutbetyg</label>
+                    <input asp-for="Educations[i].Grade" class="form-control" />
+                </div>
+
+            </div>
+        }
+    </div>
+
+    <h3>Erfarenheter</h3>
+    <div id="experience-list">
+        @for (int i = 0; i < Model.Experiences.Count; i++)
+        {
+            <input type="hidden" asp-for="Experiences[i].Id" />
+            <input type="hidden" asp-for="Experiences[i].CvId" />
+            <div class="border-2">
+                <div class="form-group">
+                    <label>Företag</label>
+                    <input asp-for="Experiences[i].Company" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label>Titel</label>
+                    <input asp-for="Experiences[i].Position" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label>Beskrivning</label>
+                    <textarea asp-for="Experiences[i].Description" class="form-control"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Startdatum</label>
+                    <input asp-for="Experiences[i].StartDate" type="date" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label>Slutdatum</label>
+                    <input asp-for="Experiences[i].EndDate" type="date" class="form-control" />
+                </div>
+            </div>
+        }
+    </div>
+
+    <h3>Färdigheter</h3>
+    @for (int i = 0; i < Model.Skills.Count; i++)
+    {
+        <div class="mb-2">
+            <input type="hidden" asp-for="Skills[i].Id" />
+            <input asp-for="Skills[i].Name" class="form-control" />
+        </div>
+    }
+
+    <button type="submit" class="btn btn-success">Spara ändringar</button>
+</form>
+<hr class="mt-5" />
+<div class="card border-danger mt-4">
+    <div class="card-body">
+        <h5 class="text-danger">Radera mitt CV</h5>
+        <p>Detta kan inte ångras</p>
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post"
+              onsubmit="return confirm('Är du säker på att du vill ta bort hela ditt CV?');">
+            <button type="submit" class="btn btn-danger">Radera</button>
+        </form>
+    </div>
+</div>
