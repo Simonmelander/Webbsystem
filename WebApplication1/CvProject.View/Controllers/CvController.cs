@@ -81,6 +81,7 @@ namespace CvProject.View.Controllers
                 Id = cv.Id,
                 FullName = cv.User.Name,
                 Email = cv.User.Email,
+                ProfilePictureUrl = cv.User.ProfilePictureUrl,
 
                 Educations = cv.Educations.Select(e => new EducationSummaryViewModel
                 {

@@ -1,9 +1,28 @@
 ﻿using CvProject.Models;
 
 namespace CvProject.View.Models.CvViewModels
+
 {
     public class CvDetailsViewModel
     {
+        private string? _profilePictureUrl;
+
+        public string? ProfilePictureUrl
+        {
+            get => _profilePictureUrl;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    _profilePictureUrl = "https://as1.ftcdn.net/jpg/00/57/04/58/1000_F_57045887_HHJml6DJVxNBMqMeDqVJ0ZQDnotp5rGD.jpg"; // Standardbild
+                }
+                else
+                {
+                    _profilePictureUrl = value;
+                }
+            }
+        }
+
         public int Id { get; set; }
         public string FullName { get; set; }
         public string Email { get; set; }
