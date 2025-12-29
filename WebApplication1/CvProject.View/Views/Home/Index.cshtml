@@ -18,7 +18,7 @@ else
             <li>
                 <strong>@(cv.User?.Name ?? "Okänd användare")</strong>
                 <span> </span>
-                <a asp-controller="Profile" asp-action="Index" asp-route-id="@(cv.User?.Id)">
+                <a asp-controller="Cv" asp-action="Details" asp-route-id="@(cv.Id)">
                     Gå till profil
                 </a>
             </li>
