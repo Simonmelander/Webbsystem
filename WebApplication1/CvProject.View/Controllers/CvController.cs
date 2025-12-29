@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace CvProject.View.Controllers
 {
@@ -76,12 +77,15 @@ namespace CvProject.View.Controllers
                 return NotFound();
             }
 
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             var model = new CvDetailsViewModel
             {
                 Id = cv.Id,
                 FullName = cv.User.Name,
                 Email = cv.User.Email,
                 ProfilePictureUrl = cv.User.ProfilePictureUrl,
+                IsOwner = cv.UserId == currentUserId,
 
                 Educations = cv.Educations.Select(e => new EducationSummaryViewModel
                 {

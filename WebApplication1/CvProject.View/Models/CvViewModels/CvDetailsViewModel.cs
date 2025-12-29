@@ -6,7 +6,6 @@ namespace CvProject.View.Models.CvViewModels
     public class CvDetailsViewModel
     {
         private string? _profilePictureUrl;
-
         public string? ProfilePictureUrl
         {
             get => _profilePictureUrl;
@@ -22,6 +21,8 @@ namespace CvProject.View.Models.CvViewModels
                 }
             }
         }
+
+        public bool IsOwner { get; set; }
 
         public int Id { get; set; }
         public string FullName { get; set; }
