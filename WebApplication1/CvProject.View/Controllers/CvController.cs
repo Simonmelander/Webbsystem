@@ -121,6 +121,11 @@ namespace CvProject.View.Controllers
 
             if (cv == null) return NotFound();
 
+            if (cv.UserId != _userManager.GetUserId(User))
+            {
+                return Forbid();
+            }
+
             var model = new CvCreateViewModel
             {
                 Id = cv.Id,
