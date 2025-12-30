@@ -1,6 +1,7 @@
 ﻿using CvProject.Models;
 using CvProject.View.Models.CvViewModels;
 using CvProject.View.Models.Data;
+using CvProject.View.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,12 +13,12 @@ namespace CvProject.View.Controllers
     public class CvController : Controller
     {
 
-        private readonly MyAppContext _db;
+        private readonly CvService _cvService;
         private readonly UserManager<User> _userManager;
 
-        public CvController(MyAppContext db, UserManager<User> userManager)
+        public CvController(CvService cvService, UserManager<User> userManager)
         {
-            _db = db;
+            _cvService = cvService;
             _userManager = userManager;
         }
 
@@ -38,162 +39,67 @@ namespace CvProject.View.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(CvCreateViewModel model)
+        [Authorize]
+        public async Task<IActionResult> Create(CvCreateViewModel viewModel)
         {
             string? currentUserId = _userManager.GetUserId(User);
             if (string.IsNullOrWhiteSpace(currentUserId)) return Unauthorized();
 
-            // Vi måste städa bort tomma rader som användaren inte fyllde i
-            // T.ex. om man lämnade "Skola" tomt, ska det inte sparas.
-            var validEducations = model.Educations.Where(e => !string.IsNullOrEmpty(e.School)).ToList();
-            var validExperiences = model.Experiences.Where(e => !string.IsNullOrEmpty(e.Company)).ToList();
-            var validSkills = model.Skills.Where(s => !string.IsNullOrEmpty(s.Name)).ToList();
+            if(!ModelState.IsValid) return View(viewModel);
 
-            var newCv = new CvProject.Models.Cv
-            {
-                UserId = currentUserId,
-                Educations = validEducations,
-                Experiences = validExperiences,
-                Skills = validSkills
-            };
-
-            _db.Cvs.Add(newCv);
-            _db.SaveChanges();
-
-            return RedirectToAction("Index", "Home"); // Eller Details
+            await _cvService.CreateCvAsync(viewModel, currentUserId);
+            return RedirectToAction("Index", "Home");
         }
 
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var cv = _db.Cvs
-                .Include(c => c.Skills)
-                .Include(c => c.Educations)
-                .Include(c => c.Experiences)
-                .Include(c => c.User)
-                .FirstOrDefault(c => c.Id == id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var model = await _cvService.GetCvDetailsAsync(id, userId);
 
-            if (cv == null)
-            {
-                return NotFound();
-            }
-
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var model = new CvDetailsViewModel
-            {
-                Id = cv.Id,
-                FullName = cv.User.Name,
-                Email = cv.User.Email,
-                ProfilePictureUrl = cv.User.ProfilePictureUrl,
-                IsOwner = cv.UserId == currentUserId,
-
-                Educations = cv.Educations.Select(e => new EducationSummaryViewModel
-                {
-                    School = e.School,
-                    Degree = e.Degree,
-                    StartDate = e.StartDate,
-                    EndDate = e.EndDate,
-                    Description = e.Description,
-                }).ToList(),
-
-                Experiences = cv.Experiences.Select(e => new ExperienceSummaryViewModel
-                {
-                    Company = e.Company,
-                    Position = e.Position,
-                    StartDate = e.StartDate,
-                    EndDate = e.EndDate,
-                    Description = e.Description
-                }).ToList(),
-
-                Skills = cv.Skills.Select(s => new SkillSummaryViewModel
-                {
-                    Name = s.Name,
-                }).ToList()
-            };
+            if (model == null) return NotFound();
 
             return View(model);
         }
 
         [HttpGet]
         [Authorize]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var cv = _db.Cvs
-                .Include(c => c.Skills)
-                .Include(c => c.Educations)
-                .Include(c => c.Experiences)
-                .FirstOrDefault(c => c.Id == id);
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            var model = await _cvService.GetCvForEditAsync(id, userId);
 
-            if (cv == null) return NotFound();
-
-            if (cv.UserId != _userManager.GetUserId(User))
-            {
-                return Forbid();
-            }
-
-            var model = new CvCreateViewModel
-            {
-                Id = cv.Id,
-                Educations = cv.Educations.ToList(),
-                Experiences = cv.Experiences.ToList(),
-                Skills = cv.Skills.ToList()
-            };
+            if (model == null) return NotFound();
 
             return View(model);
         }
 
         [HttpPost]
-        public IActionResult Edit(int id, CvCreateViewModel model)
+        [Authorize]
+        public async Task<IActionResult> Edit(int id, CvCreateViewModel model)
         {
-            var cv = _db.Cvs
-                .Include(c => c.Skills)
-                .Include(c => c.Educations)
-                .Include(c => c.Experiences)
-                .FirstOrDefault(c => c.Id == id);
+            if (!ModelState.IsValid) return View(model);
 
-            if (cv == null) return NotFound();
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            if (!ModelState.IsValid)
-            {
-                Console.Write("ModelState is invalid:");
-                return View(model);
-            }
+            bool success = await _cvService.UpdateCvAsync(id, model, userId);
 
-            // Rensa bort gamla poster
-            _db.Educations.RemoveRange(cv.Educations);
-            _db.Experiences.RemoveRange(cv.Experiences);
-            _db.Skills.RemoveRange(cv.Skills);
+            if (!success) return NotFound();
 
-            cv.Educations = model.Educations.Where(e => !string.IsNullOrEmpty(e.School)).ToList();
-            cv.Experiences = model.Experiences.Where(e => !string.IsNullOrEmpty(e.Company)).ToList();
-            cv.Skills = model.Skills.Where(s => !string.IsNullOrEmpty(s.Name)).ToList();
-
-            try
-            {
-                _db.Update(cv);
-                _db.SaveChanges();
-                return RedirectToAction("Details", new { id = cv.Id });
-            }
-            catch (DbUpdateException ex)
-            {
-                ModelState.AddModelError("", "Ett fel uppstod vid uppdatering av CV:t. Försök igen.");
-                throw;
-            }
+            return RedirectToAction("Details", new { id });
         }
 
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
-            var cv = await _db.Cvs.FindAsync(id);
-            if (cv == null) return NotFound();
+            var userId = _userManager.GetUserId(User);
+            if (userId == null) return Unauthorized();
+
+            bool success = await _cvService.DeleteCvAsync(id, userId);
             
-            var currentUserId = _userManager.GetUserId(User);
-            if (cv.UserId != currentUserId) return Forbid();
-
-            _db.Cvs.Remove(cv);
-            await _db.SaveChangesAsync();
-
+            if (!success) return NotFound();
             return RedirectToAction("Index", "Home");
         }
 
