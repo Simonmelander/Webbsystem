@@ -1,5 +1,6 @@
 using CvProject.Models;
 using CvProject.View.Models.Data;
+using CvProject.View.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,7 +37,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages(); 
+builder.Services.AddRazorPages();
+
+builder.Services.AddScoped<CvService>();
 
 var app = builder.Build();
 
