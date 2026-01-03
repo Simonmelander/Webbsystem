@@ -40,6 +40,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 builder.Services.AddScoped<CvService>();
+builder.Services.AddScoped<ProjectService>();
 
 var app = builder.Build();
 
