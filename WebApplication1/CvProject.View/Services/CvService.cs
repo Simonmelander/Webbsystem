@@ -86,10 +86,7 @@ namespace CvProject.View.Services
             Cv? cv = await GetCvAsync(cvId);
             if (cv == null || cv.UserId != userId) return false;
 
-            // Clean up old entries
-            _db.Educations.RemoveRange(cv.Educations);
-            _db.Experiences.RemoveRange(cv.Experiences);
-            _db.Skills.RemoveRange(cv.Skills);
+            
 
             AssignValidEntriesToCv(viewModel, cv);
 

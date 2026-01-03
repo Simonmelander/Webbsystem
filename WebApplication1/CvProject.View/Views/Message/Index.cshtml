@@ -1,0 +1,48 @@
+﻿@model IEnumerable<CvProject.Models.Message>
+
+<div class="container py-4">
+    <h2>Min Inkorg</h2>
+    <hr />
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">Du har inga meddelanden just nu.</div>
+    }
+    else
+    {
+        <div class="list-group">
+            @foreach (var msg in Model)
+            {
+                string fromName = "Okänd";
+                if (msg.Sender != null)
+                {
+                    fromName = msg.Sender.UserName;
+                }
+                else
+                {
+                    fromName = msg.AnonymousName + " (Ej inloggad)";
+                }
+
+                string colorClass = msg.IsRead ? "bg-white" : "list-group-item-warning";
+
+                <div class="list-group-item @colorClass mb-3 border rounded shadow-sm">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">@msg.Subject</h5>
+                        <small class="text-muted">@msg.DateSent.ToString("yyyy-MM-dd HH:mm")</small>
+                    </div>
+                    <p class="mb-1"><strong>Från:</strong> @fromName</p>
+                    <p class="mb-1 p-2 bg-light rounded">@msg.Body</p>
+
+                    <div class="mt-2">
+                        @if (!msg.IsRead)
+                        {
+                            <a asp-controller="Message" asp-action="Read" asp-route-id="@msg.Id" class="btn btn-sm btn-success">Markera som läst</a>
+                        }
+
+                        <a asp-controller="Message" asp-action="Delete" asp-route-id="@msg.Id" class="btn btn-sm btn-danger" onclick="return confirm('Ta bort?');">Ta bort</a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
