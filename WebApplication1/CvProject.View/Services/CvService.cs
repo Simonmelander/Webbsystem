@@ -47,7 +47,8 @@ namespace CvProject.View.Services
                     Degree = e.Degree,
                     FieldOfStudy = e.FieldOfStudy,
                     StartDate = e.StartDate,
-                    EndDate = e.EndDate
+                    EndDate = e.EndDate,
+                    Description = e.Description
                 }).ToList(),
 
                 Experiences = cv.Experiences.Select(e => new ExperienceSummaryViewModel
@@ -55,12 +56,20 @@ namespace CvProject.View.Services
                     Company = e.Company,
                     Position = e.Position,
                     StartDate = e.StartDate,
-                    EndDate = e.EndDate
+                    EndDate = e.EndDate,
+                    Description = e.Description
                 }).ToList(),
 
                 Skills = cv.Skills.Select(s => new SkillSummaryViewModel
                 {
                     Name = s.Name,
+                }).ToList(),
+
+                Projects = cv.User.ProjectUsers.Select(p => new ProjectSummaryViewModel
+                {
+                    Title = p.Project.Title,
+                    Description = p.Project.Description,
+                    CreatedDate = p.Project.CreatedDate,
                 }).ToList()
             };
         }

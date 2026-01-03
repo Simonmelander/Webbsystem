@@ -30,6 +30,7 @@ namespace CvProject.View.Models.CvViewModels
         public List<EducationSummaryViewModel> Educations { get; set; } = new();
         public List<ExperienceSummaryViewModel> Experiences { get; set; } = new();
         public List<SkillSummaryViewModel> Skills { get; set; } = new();
+        public List<ProjectSummaryViewModel> Projects { get; set; } = new();
     }
 
     public class EducationSummaryViewModel
@@ -58,5 +59,13 @@ namespace CvProject.View.Models.CvViewModels
     {
         public int Id { get; set; }
         public string Name { get; set; }
+    }
+
+    public class ProjectSummaryViewModel
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public DateTime CreatedDate { get; set; }
     }
 }
