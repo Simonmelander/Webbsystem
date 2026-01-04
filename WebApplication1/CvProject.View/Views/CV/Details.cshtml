@@ -33,6 +33,20 @@
                             <div class="card-body">
                                 <h5 class="card-title">Kontakta @Model.FullName</h5>
                                 <form asp-controller="Message" asp-action="Send" method="post">
+
+
+                                    @if (!User.Identity.IsAuthenticated)
+                                    {
+                                        <div class="mb-3">
+                                            <input type="text" name="anonymousName" class="form-control mb-2" placeholder="Ditt namn" required />
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="mb-3">
+                                            <input type="text" name="anonymousName" class="form-control mb-2" value="@User.Identity.Name" disabled />
+                                        </div>
+                                    }
                                     <div class="mb-3">
                                         <input type="text" name="subject" class="form-control mb-2" placeholder="Ämne" required />
                                     </div>
@@ -40,7 +54,7 @@
                                         <textarea name="body" class="form-control mb-2" rows="3" placeholder="Skriv ditt meddelande här..." required></textarea>
                                     </div>
                                     <input type="hidden" name="receiverId" value="@Model.User.Id" />
-                                    <input type="hidden" name="anonymousName" value="Guest" />
+                                    <input type="hidden" name="anonymousName" value="Anonym" />
                                     <button type="submit" class="btn btn-primary btn-sm w-100 mt-1">Skicka</button>
                                 </form>
                             </div>
@@ -60,7 +74,6 @@
                         }
                     </div>
                 </div>
-
 
                 <!--Erfarenhet-->
                 <div class="row mt-5">
@@ -118,6 +131,12 @@
                     <div class="col-lg-8">
                         <section class="mb-5">
                             <h3 class="fw-bold mb>-4 pb-2 border-bottom">Projekt</h3>
+
+                            @if (!Model.Projects.Any())
+                            {
+                                <p class="text-secondary">Inga projekt att visa.</p>
+                            }
+
                             @foreach (var project in Model.Projects)
                             {
                                 <div class="card border-0 mb-3 shadow-sm">
