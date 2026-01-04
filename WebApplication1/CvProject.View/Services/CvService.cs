@@ -8,10 +8,11 @@ namespace CvProject.View.Services
     public class CvService
     {
         private readonly MyAppContext _db;
-
-        public CvService(MyAppContext db)
+        private readonly IWebHostEnvironment _hostingEnvironment;
+        public CvService(MyAppContext db, IWebHostEnvironment hostingEnvironment)
         {
             _db = db;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         public async Task CreateCvAsync(CvCreateViewModel viewModel, string userId)
@@ -87,16 +88,40 @@ namespace CvProject.View.Services
                 Id = cv.Id,
                 Educations = cv.Educations.ToList(),
                 Experiences = cv.Experiences.ToList(),
-                Skills = cv.Skills.ToList()
+                Skills = cv.Skills.ToList(),
+                User = cv.User,
+                ProfilePictureUrl = cv.User.ProfilePictureUrl
             };
         }
 
-        public async Task<bool> UpdateCvAsync(int cvId, CvCreateViewModel viewModel, string userId)
+        public async Task<bool> UpdateCvAsync(int cvId, CvCreateViewModel viewModel, string userId, IFormFile? profileImage)
         {
             Cv? cv = await GetCvAsync(cvId);
             if (cv == null || cv.UserId != userId) return false;
 
-            
+            if(profileImage != null && profileImage.Length > 0)
+            {
+                
+                string uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "images");
+
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + profileImage.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await profileImage.CopyToAsync(fileStream);
+                }
+
+                
+                cv.User.ProfilePictureUrl = "/images/" + uniqueFileName;
+            }
 
             AssignValidEntriesToCv(viewModel, cv);
 
