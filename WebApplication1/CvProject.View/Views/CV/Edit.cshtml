@@ -20,8 +20,11 @@
         <input type="hidden" asp-for="Id" />
 
         <div class="card border-0 shadow-sm mb-5">
-            <div class="card-header bg-primary text-white py-3">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
                 <h3 class="card-title h5 mb-0"><i class="bi bi-mortarboard-fill me-2"></i>Utbildningar</h3>
+                <button type="button" class="btn btn-light btn-sm shadow-sm" onclick="addEducation()">
+                    <i class="bi bi-plus-lg">Lägg till</i>
+                </button>
             </div>
         </div>
 
@@ -29,7 +32,7 @@
             <div id="education-list">
                 @for (int i = 0; i < Model.Educations.Count; i++)
                 {
-                    <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card mb-4 border-0 shadow-sm education-item">
                         <div class="card-body">
                             <input type="hidden" asp-for="Educations[i].Id" />
                             <input type="hidden" asp-for="Educations[i].CvId" />
@@ -71,8 +74,11 @@
         </div>
 
         <div class="card border-0 shadow-sm mb-5">
-            <div class="card-header bg-primary text-white py-3">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
                 <h3 class="card-title h5 mb-0"><i class="bi bi-mortarboard-fill me-2"></i>Erfarenheter</h3>
+                <button type="button" class="btn btn-light btn-sm shadow-sm" onclick="addExperience()">
+                    <i class="bi bi-plus-lg">Lägg till</i>
+                </button>
             </div>
         </div>
 
@@ -80,7 +86,7 @@
             <div id="experience-list">
                 @for (int i = 0; i < Model.Experiences.Count; i++)
                 {
-                    <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card mb-4 border-0 shadow-sm experience-item">
                         <div class="card-body">
                             <input type="hidden" asp-for="Experiences[i].Id" />
                             <input type="hidden" asp-for="Experiences[i].CvId" />
@@ -156,3 +162,80 @@
         </div>
     </div>
     </div>
+
+@section Scripts {
+<script>
+    function addEducation() {
+        const list = document.getElementById('education-list');
+        const index = list.querySelectorAll('.education-item').length; // Räkna befintliga kort
+        
+        const html = `
+            <div class="card mb-4 border-0 shadow-sm education-item animate__animated animate__fadeIn">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Skola</label>
+                            <input name="Educations[${index}].School" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Examen</label>
+                            <input name="Educations[${index}].Degree" class="form-control" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Ämne/Inriktning</label>
+                            <input name="Educations[${index}].FieldOfStudy" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Startdatum</label>
+                            <input name="Educations[${index}].StartDate" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Slutdatum</label>
+                            <input name="Educations[${index}].EndDate" type="date" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        
+        list.insertAdjacentHTML('beforeend', html);
+    }
+
+    function addExperience() {
+        const list = document.getElementById('experience-list');
+            const index = list.querySelectorAll('.experience-item').length;
+
+            const html = `
+                <div class="card mb-4 border-0 shadow-sm experience-item animate__animated animate__fadeIn">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Företag</label>
+                                <input name="Experiences[${index}].Company" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Titel</label>
+                                <input name="Experiences[${index}].Position" class="form-control" />
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Beskrivning</label>
+                                <textarea name="Experiences[${index}].Description" class="form-control" rows="3"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Startdatum</label>
+                                <input name="Experiences[${index}].StartDate" type="date" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Slutdatum</label>
+                                <input name="Experiences[${index}].EndDate" type="date" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+            list.insertAdjacentHTML('beforeend', html);
+    }
+
+
+</script>
+
+}
