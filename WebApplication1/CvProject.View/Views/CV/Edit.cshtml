@@ -1,115 +1,158 @@
 ﻿@using CvProject.View.Models.CvViewModels
 @model CvCreateViewModel;
 
-<div class="container-lg">
-    <h1>Redigera CV</h1>
-    <div asp-validation-summary="All" class="text-danger"></div>
-</div>
-
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="Id" />
-
-    <h3>Utbildningar</h3>
-    <div id="education-list">
-        @for (int i = 0; i < Model.Educations.Count; i++)
-        {
-            <div class="mb-3 border p-2">
-                <input type="hidden" asp-for="Educations[i].Id" />
-                <input type="hidden" asp-for="Educations[i].CvId" />
-
-                <div class="form-group">
-                    <label>Skola</label>
-                    <input asp-for="Educations[i].School" class="form-control" />
-                </div>
-
-                <div class="form-group">
-                    <label>Examen</label>
-                    <input asp-for="Educations[i].Degree" class="form-control" />
-                </div>
-
-                <div>
-                    <label>Ämne/Inriktning</label>
-                    <input asp-for="Educations[i].FieldOfStudy" class="form-control" />
-                </div>
-
-                <div class="form-group">
-                    <label>Beskrivning</label>
-                    <textarea asp-for="Educations[i].Description" class="form-control"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Startdatum</label>
-                    <input asp-for="Educations[i].StartDate" type="date" class="form-control" />
-                </div>
-
-                <div class="form-group">
-                    <label>Slutdatum</label>
-                    <input asp-for="Educations[i].EndDate" type="date" class="form-control" />
-                </div>
-
-                <div class="form-group">
-                    <label>Slutbetyg</label>
-                    <input asp-for="Educations[i].Grade" class="form-control" />
-                </div>
-
-            </div>
-        }
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold text-primary">Redigera CV</h1>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Tillbaka
+        </a>
     </div>
 
-    <h3>Erfarenheter</h3>
-    <div id="experience-list">
-        @for (int i = 0; i < Model.Experiences.Count; i++)
-        {
-            <input type="hidden" asp-for="Experiences[i].Id" />
-            <input type="hidden" asp-for="Experiences[i].CvId" />
-            <div class="border-2">
-                <div class="form-group">
-                    <label>Företag</label>
-                    <input asp-for="Experiences[i].Company" class="form-control" />
-                </div>
-
-                <div class="form-group">
-                    <label>Titel</label>
-                    <input asp-for="Experiences[i].Position" class="form-control" />
-                </div>
-
-                <div class="form-group">
-                    <label>Beskrivning</label>
-                    <textarea asp-for="Experiences[i].Description" class="form-control"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Startdatum</label>
-                    <input asp-for="Experiences[i].StartDate" type="date" class="form-control" />
-                </div>
-
-                <div class="form-group">
-                    <label>Slutdatum</label>
-                    <input asp-for="Experiences[i].EndDate" type="date" class="form-control" />
-                </div>
-            </div>
-        }
-    </div>
-
-    <h3>Färdigheter</h3>
-    @for (int i = 0; i < Model.Skills.Count; i++)
+    @if (!ViewData.ModelState.IsValid)
     {
-        <div class="mb-2">
-            <input type="hidden" asp-for="Skills[i].Id" />
-            <input asp-for="Skills[i].Name" class="form-control" />
+        <div class="alert alert-danger shadow-sm mb-4">
+            <div asp-validation-summary="All" class="text-danger"></div>
         </div>
     }
 
-    <button type="submit" class="btn btn-success">Spara ändringar</button>
-</form>
-<hr class="mt-5" />
-<div class="card border-danger mt-4">
-    <div class="card-body">
-        <h5 class="text-danger">Radera mitt CV</h5>
-        <p>Detta kan inte ångras</p>
-        <form asp-action="Delete" asp-route-id="@Model.Id" method="post"
-              onsubmit="return confirm('Är du säker på att du vill ta bort hela ditt CV?');">
-            <button type="submit" class="btn btn-danger">Radera</button>
-        </form>
+    <form asp-action="Edit" method="post" class="needs-validation">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="card border-0 shadow-sm mb-5">
+            <div class="card-header bg-primary text-white py-3">
+                <h3 class="card-title h5 mb-0"><i class="bi bi-mortarboard-fill me-2"></i>Utbildningar</h3>
+            </div>
+        </div>
+
+        <div class="card-body bg-light">
+            <div id="education-list">
+                @for (int i = 0; i < Model.Educations.Count; i++)
+                {
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-body">
+                            <input type="hidden" asp-for="Educations[i].Id" />
+                            <input type="hidden" asp-for="Educations[i].CvId" />
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Skola</label>
+                                    <input asp-for="Educations[i].School" class="form-control" placeholder="t.ex. Stockholms Universitet" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Examen</label>
+                                    <input asp-for="Educations[i].Degree" class="form-control" placeholder="t.ex. Kandidatexamen" />
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Ämne/Inriktning</label>
+                                    <input asp-for="Educations[i].FieldOfStudy" class="form-control" />
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Beskrivning</label>
+                                    <textarea asp-for="Educations[i].Description" class="form-control" rows="2"></textarea>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Startdatum</label>
+                                    <input asp-for="Educations[i].StartDate" type="date" class="form-control" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Slutdatum</label>
+                                    <input asp-for="Educations[i].EndDate" type="date" class="form-control" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Slutbetyg</label>
+                                    <input asp-for="Educations[i].Grade" class="form-control" placeholder="Valfritt" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-5">
+            <div class="card-header bg-primary text-white py-3">
+                <h3 class="card-title h5 mb-0"><i class="bi bi-mortarboard-fill me-2"></i>Erfarenheter</h3>
+            </div>
+        </div>
+
+        <div class="card-body bg-light">
+            <div id="experience-list">
+                @for (int i = 0; i < Model.Experiences.Count; i++)
+                {
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-body">
+                            <input type="hidden" asp-for="Experiences[i].Id" />
+                            <input type="hidden" asp-for="Experiences[i].CvId" />
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Företag</label>
+                                    <input asp-for="Experiences[i].Company" class="form-control" placeholder="t.ex. McDonalds" />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Position/Roll</label>
+                                    <input asp-for="Experiences[i].Position" class="form-control" placeholder="t.ex. McDonalds" />
+                                </div>
+                            </div>
+
+                            <div class="mb-3 mt-3">
+                                <label class="form-label fw-bold">Beskrivning</label>
+                                <textarea asp-for="Experiences[i].Description" class="form-control" placeholder="Beskriv arbetetsuppgifterna"></textarea>
+                                </div>
+
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Startdatum</label>
+                                    <input asp-for="Experiences[i].StartDate" type="date" class="form-control" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Slutdatum</label>
+                                    <input asp-for="Experiences[i].EndDate" type="date" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-5">
+            <div class="card-header bg-success text-white py-3">
+                <h3 class="card-title h5 mb-0"><i class="bi bi-tags-fill me-2"></i>Färdigheter</h3>
+            </div>
+            <div class="card-body">
+                <div class="row row-cols-1 row-cols-md-3 g-3">
+                    @for (int i = 0; i < Model.Skills.Count; i++)
+                    {
+                        <div class="col">
+                            <input type="hidden" asp-for="Skills[i].Id" />
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-star"></i></span>
+                                <input asp-for="Skills[i].Name" class="form-control" placeholder="Färdighet" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-center mb-5">
+            <button type="submit" class="btn btn-primary btn-lg px-5 shadow">Spara alla ändringar</button>
+        </div>
+
+    </form>
+    <div class="card border-danger shadow-sm mt-5">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="text-danger fw-bold mb-1">Radera mitt CV</h5>
+                <p class="text-muted small mb-0">Detta raderar all information permanent och kan inte ångras.</p>
+            </div>
+            <form asp-action="Delete" asp-route-id="@Model.Id" method="post"
+                  onsubmit="return confirm('Är du säker på att du vill ta bort hela ditt CV?');">
+                <button type="submit" class="btn btn-outline-danger">Radera CV</button>
+            </form>
+        </div>
     </div>
-</div>
+    </div>
