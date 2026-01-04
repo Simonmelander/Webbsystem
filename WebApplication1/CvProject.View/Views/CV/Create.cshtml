@@ -1,91 +1,203 @@
 ﻿@using CvProject.View.Models.CvViewModels
 @model CvCreateViewModel
 
-<div class="container">
-    <h2>Skapa nytt CV</h2>
-    <form asp-action="Create" method="post">
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-4 fw-bold text-primary">Skapa nytt CV</h1>
+        <p class="text-muted">Fyll i dina uppgifter för att komma igång.</p>
+    </div>
 
-        <h4 class="mt-4">Utbildning</h4>
-        <div class="card p-3 bg-light">
-            @for (int i = 0; i < Model.Educations.Count; i++)
-            {
-                <div class="mb-3 border-bottom pb-3">
-                    <label>Skola</label>
-                    <input asp-for="Educations[i].School" class="form-control" />
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger shadow-sm mb-4">
+            <div asp-validation-summary="All" class="text-danger"></div>
+        </div>
+    }
 
-                    <label>Examen</label>
-                    <input asp-for="Educations[i].Degree" class="form-control" />
+    <form asp-action="Create" method="post" enctype="multipart/form-data" class="needs-validation">
 
-                    <label>Ämne</label>
-                    <input asp-for="Educations[i].FieldOfStudy" class="form-control"/>
-
-                    <label>Betyg</label>
-                    <input asp-for="Educations[i].Grade" class="form-control" />
-                    
-                    <label>Beskrivning</label>
-                    <textarea asp-for="Educations[i].Description" class="form-control" rows="3"></textarea>
-
-                    <div class="row">
-                        <div class="col">
-                            <label>Startdatum</label>
-                            <input asp-for="Educations[i].StartDate" type="date" class="form-control" />
-                        </div>
-                        <div class="col">
-                            <label>Slutdatum</label>
-                            <input asp-for="Educations[i].EndDate" type="date" class="form-control" />
-                        </div>
+        <div class="card border-0 shadow-sm mb-5">
+            <div class="card-header bg-secondary text-white py-3">
+                <h3 class="card-title h5 mb-0"><i class="bi bi-person-bounding-box me-2"></i>Profilbild</h3>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-2 text-center mb-3 mb-md-0">
+                        <img src="https://as1.ftcdn.net/jpg/00/57/04/58/1000_F_57045887_HHJml6DJVxNBMqMeDqVJ0ZQDnotp5rGD.jpg"
+                             id="profile-preview" class="img-thumbnail rounded-circle shadow-sm"
+                             style="width: 100px; height: 100px; object-fit: cover;" />
+                    </div>
+                    <div class="col-md-10">
+                        <label class="form-label fw-bold">Välj en bild</label>
+                        <input type="file" name="profileImage" class="form-control" accept="image/*" onchange="previewImage(this)" />
                     </div>
                 </div>
-            }
+            </div>
         </div>
 
-        <h4 class="mt-4">Erfarenhet</h4>
-        <div class="card p-3 bg-light">
-            @for (int i = 0; i < Model.Experiences.Count; i++)
-            {
-                <div class="mb-3 border-bottom pb-3">
-                    <label>Företag</label>
-                    <input asp-for="Experiences[i].Company" class="form-control" />
-
-                    <label>Roll</label>
-                    <input asp-for="Experiences[i].Position" class="form-control" />
-
-
-                    <label>Beskrivning</label>
-                    <textarea asp-for="Experiences[i].Description" class="form-control" rows="3"></textarea>
-
-
-                    <div class="row">
-                        <div class="col">
-                            <label>Startdatum</label>
-                            <input asp-for="Experiences[i].StartDate" type="date" class="form-control" />
-                            </div>
-                        
-                        <div class="col">
-                            <label>Slutdatum</label>
-                            <input asp-for="Experiences[i].EndDate" type="date" class="form-control" />
-                        </div>
-                       
-                    </div>
-
-
-                </div>
-            }
-        </div>
-
-        <h4 class="mt-4">Färdigheter</h4>
-        <div class="card p-3 bg-light">
-            <div class="row">
-                @for (int i = 0; i < Model.Skills.Count; i++)
+        <div class="card border-0 shadow-sm mb-5">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                <h3 class="card-title h5 mb-0"><i class="bi bi-mortarboard-fill me-2"></i>Utbildningar</h3>
+                <button type="button" class="btn btn-light btn-sm shadow-sm" onclick="addEducation()">
+                    <i class="bi bi-plus-lg"></i> Lägg till
+                </button>
+            </div>
+            <div class="card-body bg-light" id="education-list">
+                @for (int i = 0; i < Model.Educations.Count; i++)
                 {
-                    <div class="col-md-4 mb-2">
-                        <label>Färdighet @(i + 1)</label>
-                        <input asp-for="Skills[i].Name" class="form-control" placeholder="T.ex. C#" />
+                    <div class="card mb-4 border-0 shadow-sm education-item">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small">Skola</label>
+                                    <input asp-for="Educations[i].School" class="form-control" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small">Examen</label>
+                                    <input asp-for="Educations[i].Degree" class="form-control" />
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold text-muted small">Ämne/Inriktning</label>
+                                    <input asp-for="Educations[i].FieldOfStudy" class="form-control" />
+                                </div>
+
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold text-muted small">Beskrivning</label>
+                                    <textarea asp-for="Educations[i].Description" class="form-control"></textarea>
+                                </div>
+
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold text-muted small">Startdatum</label>
+                                    <input asp-for="Educations[i].StartDate" type="date" class="form-control" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold text-muted small">Slutdatum</label>
+                                    <input asp-for="Educations[i].EndDate" type="date" class="form-control" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold text-muted small">Betyg</label>
+                                    <input asp-for="Educations[i].Grade" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 }
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-lg mt-4">Spara hela CV:t</button>
+        <div class="card border-0 shadow-sm mb-5">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+                <h3 class="card-title h5 mb-0"><i class="bi bi-briefcase-fill me-2"></i>Erfarenhet</h3>
+                <button type="button" class="btn btn-light btn-sm shadow-sm" onclick="addExperience()">
+                    <i class="bi bi-plus-lg"></i> Lägg till
+                </button>
+            </div>
+            <div class="card-body bg-light" id="experience-list">
+                @for (int i = 0; i < Model.Experiences.Count; i++)
+                {
+                    <div class="card mb-4 border-0 shadow-sm experience-item">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small">Företag</label>
+                                    <input asp-for="Experiences[i].Company" class="form-control" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small">Roll</label>
+                                    <input asp-for="Experiences[i].Position" class="form-control" />
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold text-muted small">Beskrivning</label>
+                                    <textarea asp-for="Experiences[i].Description" class="form-control" rows="3"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small">Startdatum</label>
+                                    <input asp-for="Experiences[i].StartDate" type="date" class="form-control" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small">Slutdatum</label>
+                                    <input asp-for="Experiences[i].EndDate" type="date" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-5">
+            <div class="card-header bg-success text-white py-3">
+                <h3 class="card-title h5 mb-0"><i class="bi bi-tags-fill me-2"></i>Färdigheter</h3>
+            </div>
+            <div class="card-body">
+                <div class="row row-cols-1 row-cols-md-3 g-3">
+                    @for (int i = 0; i < Model.Skills.Count; i++)
+                    {
+                        <div class="col">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted">@(i + 1)</span>
+                                <input asp-for="Skills[i].Name" class="form-control" placeholder="T.ex. C#" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-5">
+            <button type="submit" class="btn btn-primary btn-lg px-5 shadow">Spara hela CV:t</button>
+        </div>
     </form>
 </div>
+
+@section Scripts {
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profile-preview').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function addEducation() {
+            const list = document.getElementById('education-list');
+            const index = list.querySelectorAll('.education-item').length;
+            const html = `
+                <div class="card mb-4 border-0 shadow-sm education-item animate__animated animate__fadeIn">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6"><label class="form-label fw-bold text-muted small">Skola</label><input name="Educations[${index}].School" class="form-control" /></div>
+                            <div class="col-md-6"><label class="form-label fw-bold text-muted small">Examen</label><input name="Educations[${index}].Degree" class="form-control" /></div>
+                            <div class="col-md-12"><label class="form-label fw-bold text-muted small">Ämne/Inriktning</label><input name="Educations[${index}].FieldOfStudy" class="form-control" /></div>
+                            <div class="col-md-4"><label class="form-label fw-bold text-muted small">Startdatum</label><input name="Educations[${index}].StartDate" type="date" class="form-control" /></div>
+                            <div class="col-md-4"><label class="form-label fw-bold text-muted small">Slutdatum</label><input name="Educations[${index}].EndDate" type="date" class="form-control" /></div>
+                            <div class="col-md-4"><label class="form-label fw-bold text-muted small">Betyg</label><input name="Educations[${index}].Grade" class="form-control" /></div>
+                        </div>
+                    </div>
+                </div>`;
+            list.insertAdjacentHTML('beforeend', html);
+        }
+
+        function addExperience() {
+            const list = document.getElementById('experience-list');
+            const index = list.querySelectorAll('.experience-item').length;
+            const html = `
+                <div class="card mb-4 border-0 shadow-sm experience-item animate__animated animate__fadeIn">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6"><label class="form-label fw-bold text-muted small">Företag</label><input name="Experiences[${index}].Company" class="form-control" /></div>
+                            <div class="col-md-6"><label class="form-label fw-bold text-muted small">Roll</label><input name="Experiences[${index}].Position" class="form-control" /></div>
+                            <div class="col-md-12"><label class="form-label fw-bold text-muted small">Beskrivning</label><textarea name="Experiences[${index}].Description" class="form-control" rows="3"></textarea></div>
+                            <div class="col-md-6"><label class="form-label fw-bold text-muted small">Startdatum</label><input name="Experiences[${index}].StartDate" type="date" class="form-control" /></div>
+                            <div class="col-md-6"><label class="form-label fw-bold text-muted small">Slutdatum</label><input name="Experiences[${index}].EndDate" type="date" class="form-control" /></div>
+                        </div>
+                    </div>
+                </div>`;
+            list.insertAdjacentHTML('beforeend', html);
+        }
+    </script>
+}

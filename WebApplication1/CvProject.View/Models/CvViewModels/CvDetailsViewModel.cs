@@ -25,11 +25,13 @@ namespace CvProject.View.Models.CvViewModels
         public bool IsOwner { get; set; }
 
         public int Id { get; set; }
+        public User User { get; set; }
         public string FullName { get; set; }
         public string Email { get; set; }
         public List<EducationSummaryViewModel> Educations { get; set; } = new();
         public List<ExperienceSummaryViewModel> Experiences { get; set; } = new();
         public List<SkillSummaryViewModel> Skills { get; set; } = new();
+        public List<ProjectSummaryViewModel> Projects { get; set; } = new();
     }
 
     public class EducationSummaryViewModel
@@ -58,5 +60,13 @@ namespace CvProject.View.Models.CvViewModels
     {
         public int Id { get; set; }
         public string Name { get; set; }
+    }
+
+    public class ProjectSummaryViewModel
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public DateTime CreatedDate { get; set; }
     }
 }

@@ -40,14 +40,14 @@ namespace CvProject.View.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Create(CvCreateViewModel viewModel)
+        public async Task<IActionResult> Create(CvCreateViewModel viewModel, IFormFile? profileImage)
         {
             string? currentUserId = _userManager.GetUserId(User);
             if (string.IsNullOrWhiteSpace(currentUserId)) return Unauthorized();
 
             if(!ModelState.IsValid) return View(viewModel);
 
-            await _cvService.CreateCvAsync(viewModel, currentUserId);
+            await _cvService.CreateCvAsync(viewModel, currentUserId, profileImage);
             return RedirectToAction("Index", "Home");
         }
 
@@ -76,14 +76,14 @@ namespace CvProject.View.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Edit(int id, CvCreateViewModel model)
+        public async Task<IActionResult> Edit(int id, CvCreateViewModel model, IFormFile? profileImage)
         {
             if (!ModelState.IsValid) return View(model);
 
             var userId = _userManager.GetUserId(User);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            bool success = await _cvService.UpdateCvAsync(id, model, userId);
+            bool success = await _cvService.UpdateCvAsync(id, model, userId, profileImage);
 
             if (!success) return NotFound();
 
