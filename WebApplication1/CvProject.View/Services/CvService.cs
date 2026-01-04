@@ -15,8 +15,26 @@ namespace CvProject.View.Services
             _hostingEnvironment = hostingEnvironment;
         }
 
-        public async Task CreateCvAsync(CvCreateViewModel viewModel, string userId)
+        public async Task CreateCvAsync(CvCreateViewModel viewModel, string userId, IFormFile? profileImage)
         {
+
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (profileImage != null && profileImage.Length > 0 && user != null)
+            {
+                string uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "images");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + profileImage.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await profileImage.CopyToAsync(fileStream);
+                }
+                user.ProfilePictureUrl = "/images/" + uniqueFileName;
+            }
+
             var newCv = new Cv
             {
                 UserId = userId,
