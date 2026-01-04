@@ -37,6 +37,7 @@ namespace CvProject.View.Services
             {
                 Id = cv.Id,
                 FullName = cv.User.Name,
+                User = cv.User,
                 Email = cv.User.Email ?? string.Empty,
                 IsOwner = cv.UserId == currentUserId,
                 ProfilePictureUrl = cv.User.ProfilePictureUrl,
