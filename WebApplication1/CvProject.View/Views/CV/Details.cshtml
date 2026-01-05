@@ -19,9 +19,12 @@
                     <h1 class="display-4 fw-bold text-primary">@Model.FullName</h1>
                     <p class="lead text-muted"><i class="bi bi-envelope"></i> @Model.Email</p>
 
+
+                    <!--Redigera-->
                     @if (Model.IsOwner)
                     {
                         <a asp-controller="CV" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary mt-3"> Redigera mitt CV</a>
+                        <p>Antal visningar: @Model.VisitCount</p>
                     }
                 </div>
 

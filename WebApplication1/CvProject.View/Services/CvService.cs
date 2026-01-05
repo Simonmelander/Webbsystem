@@ -60,6 +60,7 @@ namespace CvProject.View.Services
                 Email = cv.User.Email ?? string.Empty,
                 IsOwner = cv.UserId == currentUserId,
                 ProfilePictureUrl = cv.User.ProfilePictureUrl,
+                VisitCount = cv.Visits,
 
                 Educations = cv.Educations.Select(e => new EducationSummaryViewModel
                 {
@@ -157,6 +158,18 @@ namespace CvProject.View.Services
             return true;
         }
 
+        public async Task IncrementCvVisitsAsync(int cvId)
+        {
+            Cv? cv = await GetCvAsync(cvId);
+            if (cv != null)
+            {
+                cv.Visits++;
+                _db.Update(cv);
+                await _db.SaveChangesAsync();
+            }
+        }
+
+
         private static void AssignValidEntriesToCv(CvCreateViewModel viewModel, Cv cv)
         {
             cv.Educations = viewModel.Educations.Where(e => !string.IsNullOrWhiteSpace(e.School)).ToList();
@@ -173,6 +186,9 @@ namespace CvProject.View.Services
                             .Include(c => c.Skills)
                             .FirstOrDefaultAsync(c => c.Id == cvId);
         }
+
+
+
 
     }
 }

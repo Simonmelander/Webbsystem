@@ -59,6 +59,12 @@ namespace CvProject.View.Controllers
 
             if (model == null) return NotFound();
 
+            if(!model.IsOwner)
+            {
+                await _cvService.IncrementCvVisitsAsync(id);
+                model.VisitCount += 1;
+            }
+
             return View(model);
         }
 
