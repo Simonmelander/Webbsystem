@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using CvProject.View.Models.Data;
-using CvProject.Models; // Innehåller din User-klass och Message-klass
+using CvProject.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,8 +13,6 @@ namespace CvProject.View.Controllers
     public class MessageController : Controller
     {
         private readonly MyAppContext _context;
-
-        // FIX: Här skriver vi ut hela sökvägen (CvProject.Models.User) för att undvika krocken
         private readonly UserManager<CvProject.Models.User> _userManager;
 
         public MessageController(MyAppContext context, UserManager<CvProject.Models.User> userManager)
@@ -23,13 +21,10 @@ namespace CvProject.View.Controllers
             _userManager = userManager;
         }
 
-        // Inkorgen
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            // "User" här refererar till den inloggade användaren (egenskapen på controllern)
             var userId = _userManager.GetUserId(User);
-
             var messages = await _context.Messages
                 .Include(m => m.Sender)
                 .Where(m => m.ReceiverId == userId)
@@ -39,7 +34,6 @@ namespace CvProject.View.Controllers
             return View(messages);
         }
 
-        // Skicka meddelande
         [HttpPost]
         public async Task<IActionResult> Send(string receiverId, string subject, string body, string anonymousName)
         {
@@ -58,7 +52,6 @@ namespace CvProject.View.Controllers
                 SenderId = _userManager.GetUserId(User)
             };
 
-            // Om SenderId är null är man inte inloggad -> spara det anonyma namnet
             if (msg.SenderId == null)
             {
                 msg.AnonymousName = anonymousName ?? "Anonym";
@@ -67,13 +60,14 @@ namespace CvProject.View.Controllers
             _context.Messages.Add(msg);
             await _context.SaveChangesAsync();
 
-            // Skicka tillbaka användaren
+            // Sätter bekräftelsemeddelandet
+            TempData["Success"] = "Ditt meddelande har skickats!";
+
             string referer = Request.Headers["Referer"].ToString();
             if (string.IsNullOrEmpty(referer)) return RedirectToAction("Index", "Home");
             return Redirect(referer);
         }
 
-        // Markera som läst
         [Authorize]
         public async Task<IActionResult> Read(int id)
         {
@@ -88,7 +82,6 @@ namespace CvProject.View.Controllers
             return RedirectToAction("Index");
         }
 
-        // Ta bort
         [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
