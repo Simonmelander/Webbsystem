@@ -1,2 +1,58 @@
-﻿<h1>Mina CV:n</h1>
-<a asp-action="Create" class="btn btn-success">Skapa nytt CV</a>
+﻿@model IEnumerable<CvProject.Models.Cv>
+
+@{
+    ViewData["Title"] = "CV Sök";
+}
+
+<div class="container mt-4">
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-6">
+            <h2>Alla CV:n</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            @if (User.Identity.IsAuthenticated)
+            {
+                <a asp-action="Create" class="btn btn-success">
+                    + Skapa mitt CV
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="card p-3 bg-light mb-4">
+        <form asp-controller="Cv" asp-action="Search" method="get">
+            <div class="input-group">
+                <input type="text" name="searchString" class="form-control" placeholder="Sök på namn..." />
+                <button type="submit" class="btn btn-primary">Sök</button>
+
+                <a asp-action="Index" class="btn btn-outline-secondary">Nollställ</a>
+            </div>
+        </form>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning">Inga CV:n hittades.</div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var cv in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">@cv.User.UserName</h5>
+                            <p class="card-text text-muted">
+                                Profil id: @cv.Id
+                            </p>
+                        </div>
+                        <div class="card-footer bg-white border-top-0">
+                            <a asp-action="Details" asp-route-id="@cv.Id" class="btn btn-outline-primary w-100">Visa Profil</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

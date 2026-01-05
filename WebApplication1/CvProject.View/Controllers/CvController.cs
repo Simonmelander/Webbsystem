@@ -12,14 +12,16 @@ namespace CvProject.View.Controllers
 {
     public class CvController : Controller
     {
-
         private readonly CvService _cvService;
         private readonly UserManager<User> _userManager;
+        private readonly MyAppContext _context; 
 
-        public CvController(CvService cvService, UserManager<User> userManager)
+        
+        public CvController(CvService cvService, UserManager<User> userManager, MyAppContext context)
         {
             _cvService = cvService;
             _userManager = userManager;
+            _context = context;
         }
 
         [HttpGet]
@@ -31,7 +33,6 @@ namespace CvProject.View.Controllers
             model.Educations.Add(new Education());
             model.Experiences.Add(new Experience());
             model.Skills.Add(new Skill());
-
             model.Skills.Add(new Skill());
             model.Skills.Add(new Skill());
 
@@ -45,7 +46,7 @@ namespace CvProject.View.Controllers
             string? currentUserId = _userManager.GetUserId(User);
             if (string.IsNullOrWhiteSpace(currentUserId)) return Unauthorized();
 
-            if(!ModelState.IsValid) return View(viewModel);
+            if (!ModelState.IsValid) return View(viewModel);
 
             await _cvService.CreateCvAsync(viewModel, currentUserId, profileImage);
             return RedirectToAction("Index", "Home");
@@ -98,10 +99,30 @@ namespace CvProject.View.Controllers
             if (userId == null) return Unauthorized();
 
             bool success = await _cvService.DeleteCvAsync(id, userId);
-            
+
             if (!success) return NotFound();
             return RedirectToAction("Index", "Home");
         }
 
+        //sökfunktion för cvs
+
+        public async Task<IActionResult> Index()
+        {
+            
+            var allCvs = await _context.Cvs.Include(c => c.User).ToListAsync();
+            return View(allCvs);
+        }
+
+        public async Task<IActionResult> Search(string searchString)
+        {
+            var cvQuery = _context.Cvs.Include(c => c.User).AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                cvQuery = cvQuery.Where(c => c.User.UserName.Contains(searchString));
+            }
+
+            return View("Index", await cvQuery.ToListAsync());
+        }
     }
 }
