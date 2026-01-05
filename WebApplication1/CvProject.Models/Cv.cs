@@ -8,6 +8,7 @@ namespace CvProject.Models
     {
         [Key]
         public int Id { get; set; }
+        public int Visits { get; set; } = 0;
         public virtual ICollection<Skill> Skills { get; set; }
         public virtual ICollection<Education> Educations { get; set; }
         public virtual ICollection<Experience> Experiences { get; set; }

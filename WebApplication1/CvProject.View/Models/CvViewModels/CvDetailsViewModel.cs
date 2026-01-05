@@ -22,8 +22,8 @@ namespace CvProject.View.Models.CvViewModels
             }
         }
 
+        public int VisitCount { get; set; }
         public bool IsOwner { get; set; }
-
         public int Id { get; set; }
         public User User { get; set; }
         public string FullName { get; set; }
