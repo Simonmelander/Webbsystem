@@ -1,12 +1,11 @@
 ﻿@using CvProject.View.Models.CvViewModels
-@model CvDetailsViewModel;
+@model CvDetailsViewModel
 
 @{
     ViewData["Title"] = "CV Details";
 }
 
 <div class="container py-5">
-
     <div class="card border-0 shadow-sm mb-5">
         <div class="card-body p-4 p-md-5">
             <div class="row align-items-center">
@@ -19,16 +18,13 @@
                     <h1 class="display-4 fw-bold text-primary">@Model.FullName</h1>
                     <p class="lead text-muted"><i class="bi bi-envelope"></i> @Model.Email</p>
 
-
-                    <!--Redigera-->
                     @if (Model.IsOwner)
                     {
-                        <a asp-controller="CV" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary mt-3"> Redigera mitt CV</a>
-                        <p>Antal visningar: @Model.VisitCount</p>
+                        <a asp-controller="Cv" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary mt-3">Redigera mitt CV</a>
+                        <p class="mt-2">Antal visningar: <strong>@Model.VisitCount</strong></p>
                     }
                 </div>
 
-                <!--Meddelande-->
                 @if (!Model.IsOwner)
                 {
                     <div class="col-md-3 mt-4 mt-md-0">
@@ -36,8 +32,6 @@
                             <div class="card-body">
                                 <h5 class="card-title">Kontakta @Model.FullName</h5>
                                 <form asp-controller="Message" asp-action="Send" method="post">
-
-
                                     @if (!User.Identity.IsAuthenticated)
                                     {
                                         <div class="mb-3">
@@ -64,38 +58,31 @@
                         </div>
                     </div>
                 }
-                <!--Färdigheter-->
+
                 <div class="mt-4">
                     <h5 class="text-muted small text-uppercase fw-bold mb-3">Färdigheter</h5>
-
                     <div class="d-flex flex-wrap gap-2">
                         @foreach (var skill in Model.Skills)
                         {
-
-
                             <span class="badge bg-primary fs-6 shadow-sm">@skill.Name</span>
                         }
                     </div>
                 </div>
 
-                <!--Erfarenhet-->
                 <div class="row mt-5">
                     <div class="col-lg-8">
                         <section class="mb-5">
-                            <h3 class="fw-bold mb-4 pb-2 border-bottom">Erfarenhet</p></h3>
+                            <h3 class="fw-bold mb-4 pb-2 border-bottom">Erfarenhet</h3>
                             @foreach (var experience in Model.Experiences)
                             {
                                 <div class="card border-0 mb-3 shadow-sm">
                                     <div class="card-body">
-
                                         <div class="d-flex justify-content-between align-items-start">
-
                                             <h5 class="fw-bold text-primary mb-1">@experience.Position</h5>
                                             <span class="text-muted fw-medium">
                                                 @experience.StartDate.ToString("MMM yyyy") - @(experience.EndDate.HasValue? experience.EndDate.Value.ToString("MMM yyyy") : "Nuvarande")
                                             </span>
                                         </div>
-
                                         <h6 class="text-muted mb-2">@experience.Company</h6>
                                         <p class="card-text text-secondary">@experience.Description</p>
                                     </div>
@@ -105,7 +92,6 @@
                     </div>
                 </div>
 
-                <!--Utbildning-->
                 <div class="row">
                     <div class="col-lg-8">
                         <section class="mb-5">
@@ -129,17 +115,14 @@
                     </div>
                 </div>
 
-                <!--Projekt-->
                 <div class="row">
                     <div class="col-lg-8">
                         <section class="mb-5">
-                            <h3 class="fw-bold mb>-4 pb-2 border-bottom">Projekt</h3>
-
+                            <h3 class="fw-bold mb-4 pb-2 border-bottom">Projekt</h3>
                             @if (!Model.Projects.Any())
                             {
                                 <p class="text-secondary">Inga projekt att visa.</p>
                             }
-
                             @foreach (var project in Model.Projects)
                             {
                                 <div class="card border-0 mb-3 shadow-sm">
@@ -152,6 +135,46 @@
                         </section>
                     </div>
                 </div>
+
+                @if (Model.SimilarCvProfiles != null && Model.SimilarCvProfiles.Any())
+                {
+                    <div class="row mt-5 pt-4 border-top">
+                        <div class="col-lg-12">
+                            <h3 class="fw-bold mb-3">Liknande profiler</h3>
+                            <p class="text-muted mb-4">Personer med liknande kompetenser</p>
+
+                            <div class="row">
+                                @foreach (var person in Model.SimilarCvProfiles)
+                                {
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card h-100 border-0 shadow-sm text-center p-3">
+                                            <div class="card-body">
+                                                <img src="@(string.IsNullOrEmpty(person.ProfilePictureUrl) ? "https://as1.ftcdn.net/jpg/00/57/04/58/1000_F_57045887_HHJml6DJVxNBMqMeDqVJ0ZQDnotp5rGD.jpg" : person.ProfilePictureUrl)"
+                                                     class="rounded-circle mb-3 shadow-sm"
+                                                     style="width: 80px; height: 80px; object-fit: cover;"
+                                                     alt="@person.FullName" />
+
+                                                <h5 class="card-title fw-bold text-primary">@person.FullName</h5>
+
+                                                <div class="mb-3">
+                                                    <span class="badge bg-success">
+                                                        @person.MatchingSkillsCount gemensamma skills
+                                                    </span>
+                                                </div>
+
+                                                <a asp-controller="Cv" asp-action="Details" asp-route-id="@person.CvId"
+                                                   class="btn btn-outline-primary btn-sm w-100 stretched-link">
+                                                    Besök Profil
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
             </div>
         </div>
     </div>

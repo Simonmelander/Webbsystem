@@ -3,10 +3,13 @@ using CvProject.View.Models.CvViewModels;
 using CvProject.View.Models.Data;
 using CvProject.View.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace CvProject.View.Controllers
 {
@@ -14,9 +17,8 @@ namespace CvProject.View.Controllers
     {
         private readonly CvService _cvService;
         private readonly UserManager<User> _userManager;
-        private readonly MyAppContext _context; 
+        private readonly MyAppContext _context;
 
-        
         public CvController(CvService cvService, UserManager<User> userManager, MyAppContext context)
         {
             _cvService = cvService;
@@ -59,11 +61,14 @@ namespace CvProject.View.Controllers
 
             if (model == null) return NotFound();
 
-            if(!model.IsOwner)
+            if (!model.IsOwner)
             {
                 await _cvService.IncrementCvVisitsAsync(id);
                 model.VisitCount += 1;
             }
+
+            //  Hämta liknande profiler
+            model.SimilarCvProfiles = await _cvService.GetSimilarCvsAsync(id);
 
             return View(model);
         }
@@ -111,10 +116,8 @@ namespace CvProject.View.Controllers
         }
 
         //sökfunktion för cvs
-
         public async Task<IActionResult> Index()
         {
-            
             var allCvs = await _context.Cvs.Include(c => c.User).ToListAsync();
             return View(allCvs);
         }

@@ -1,7 +1,8 @@
 ﻿using CvProject.Models;
+using System.Collections.Generic;
+using System;
 
 namespace CvProject.View.Models.CvViewModels
-
 {
     public class CvDetailsViewModel
     {
@@ -13,7 +14,8 @@ namespace CvProject.View.Models.CvViewModels
             {
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    _profilePictureUrl = "https://as1.ftcdn.net/jpg/00/57/04/58/1000_F_57045887_HHJml6DJVxNBMqMeDqVJ0ZQDnotp5rGD.jpg"; // Standardbild
+                    // Standardbild om ingen finns
+                    _profilePictureUrl = "https://as1.ftcdn.net/jpg/00/57/04/58/1000_F_57045887_HHJml6DJVxNBMqMeDqVJ0ZQDnotp5rGD.jpg";
                 }
                 else
                 {
@@ -32,6 +34,17 @@ namespace CvProject.View.Models.CvViewModels
         public List<ExperienceSummaryViewModel> Experiences { get; set; } = new();
         public List<SkillSummaryViewModel> Skills { get; set; } = new();
         public List<ProjectSummaryViewModel> Projects { get; set; } = new();
+
+        // För liknande profiler
+        public List<SimilarPersonViewModel> SimilarCvProfiles { get; set; } = new();
+    }
+
+    public class SimilarPersonViewModel
+    {
+        public int CvId { get; set; }
+        public string FullName { get; set; }
+        public string? ProfilePictureUrl { get; set; }
+        public int MatchingSkillsCount { get; set; }
     }
 
     public class EducationSummaryViewModel
