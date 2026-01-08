@@ -1,14 +1,7 @@
 ﻿using CvProject.Models;
 using CvProject.View.Models.CvViewModels;
 using CvProject.View.Models.Data;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CvProject.View.Services
 {
@@ -59,6 +52,12 @@ namespace CvProject.View.Services
 
             if (cv == null) return null;
 
+            
+            if (cv.User.IsPrivate && cv.UserId != currentUserId)
+            {
+                return null;
+            }
+
             return new CvDetailsViewModel
             {
                 Id = cv.Id,
@@ -102,7 +101,6 @@ namespace CvProject.View.Services
             };
         }
 
-
         public async Task<CvCreateViewModel?> GetCvForEditAsync(int cvId, string userId)
         {
             Cv? cv = await GetCvAsync(cvId);
@@ -128,11 +126,7 @@ namespace CvProject.View.Services
             if (profileImage != null && profileImage.Length > 0)
             {
                 string uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "images");
-
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + profileImage.FileName;
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
@@ -141,7 +135,6 @@ namespace CvProject.View.Services
                 {
                     await profileImage.CopyToAsync(fileStream);
                 }
-
                 cv.User.ProfilePictureUrl = "/images/" + uniqueFileName;
             }
 
@@ -172,10 +165,8 @@ namespace CvProject.View.Services
             }
         }
 
-        // likande profiler
         public async Task<List<SimilarPersonViewModel>> GetSimilarCvsAsync(int currentCvId)
         {
-            // 1. Hämta nuvarande CV och skills
             var currentCv = await _db.Cvs
                 .Include(c => c.Skills)
                 .FirstOrDefaultAsync(c => c.Id == currentCvId);
@@ -183,47 +174,50 @@ namespace CvProject.View.Services
             if (currentCv == null || !currentCv.Skills.Any())
                 return new List<SimilarPersonViewModel>();
 
-            // Gör om skills till små bokstäver för enkel jämförelse
             var currentSkillNames = currentCv.Skills
                 .Where(s => !string.IsNullOrWhiteSpace(s.Name))
                 .Select(s => s.Name.ToLower().Trim())
                 .ToList();
 
-            // 2. Hämta alla andra CV:n som INTE är privata
+            
             var otherCvs = await _db.Cvs
                 .Include(c => c.User)
                 .Include(c => c.Skills)
-                .Where(c => c.Id != currentCvId && c.User.IsPrivate == false)
+                .Where(c => c.Id != currentCvId && !c.User.IsPrivate)
                 .ToListAsync();
 
-            var matches = new List<SimilarPersonViewModel>();
+            var similarProfiles = new List<SimilarPersonViewModel>();
 
             foreach (var otherCv in otherCvs)
             {
-                // Räkna hur många skills som matchar
-                int count = otherCv.Skills
+                int matchCount = otherCv.Skills
                     .Count(s => !string.IsNullOrWhiteSpace(s.Name) &&
                                 currentSkillNames.Contains(s.Name.ToLower().Trim()));
 
-                if (count > 0)
+                if (matchCount > 0)
                 {
-                    matches.Add(new SimilarPersonViewModel
+                    similarProfiles.Add(new SimilarPersonViewModel
                     {
                         CvId = otherCv.Id,
                         FullName = otherCv.User.Name,
-                        ProfilePictureUrl = otherCv.User.ProfilePictureUrl, // Kan vara null, hanteras i Vyn
-                        MatchingSkillsCount = count
+                        ProfilePictureUrl = otherCv.User.ProfilePictureUrl,
+                        MatchingSkillsCount = matchCount
                     });
                 }
             }
 
-            // Sortera: Flest matchningar först, ta max 3
-            return matches.OrderByDescending(x => x.MatchingSkillsCount).Take(3).ToList();
+            return similarProfiles
+                .OrderByDescending(x => x.MatchingSkillsCount)
+                .Take(3)
+                .ToList();
         }
-
 
         private static void AssignValidEntriesToCv(CvCreateViewModel viewModel, Cv cv)
         {
+            if (cv.Educations != null) cv.Educations.Clear();
+            if (cv.Experiences != null) cv.Experiences.Clear();
+            if (cv.Skills != null) cv.Skills.Clear();
+
             cv.Educations = viewModel.Educations.Where(e => !string.IsNullOrWhiteSpace(e.School)).ToList();
             cv.Experiences = viewModel.Experiences.Where(e => !string.IsNullOrWhiteSpace(e.Company)).ToList();
             cv.Skills = viewModel.Skills.Where(s => !string.IsNullOrWhiteSpace(s.Name)).ToList();
@@ -233,6 +227,8 @@ namespace CvProject.View.Services
         {
             return await _db.Cvs
                 .Include(c => c.User)
+                .ThenInclude(u => u.ProjectUsers)
+                .ThenInclude(pu => pu.Project)
                 .Include(c => c.Educations)
                 .Include(c => c.Experiences)
                 .Include(c => c.Skills)

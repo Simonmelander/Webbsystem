@@ -3,13 +3,10 @@ using CvProject.View.Models.CvViewModels;
 using CvProject.View.Models.Data;
 using CvProject.View.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace CvProject.View.Controllers
 {
@@ -31,18 +28,17 @@ namespace CvProject.View.Controllers
         public IActionResult Create()
         {
             var model = new CvCreateViewModel();
-
             model.Educations.Add(new Education());
             model.Experiences.Add(new Experience());
             model.Skills.Add(new Skill());
             model.Skills.Add(new Skill());
             model.Skills.Add(new Skill());
-
             return View(model);
         }
 
         [HttpPost]
         [Authorize]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CvCreateViewModel viewModel, IFormFile? profileImage)
         {
             string? currentUserId = _userManager.GetUserId(User);
@@ -57,6 +53,8 @@ namespace CvProject.View.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            
             var model = await _cvService.GetCvDetailsAsync(id, userId);
 
             if (model == null) return NotFound();
@@ -67,7 +65,6 @@ namespace CvProject.View.Controllers
                 model.VisitCount += 1;
             }
 
-            //  Hämta liknande profiler
             model.SimilarCvProfiles = await _cvService.GetSimilarCvsAsync(id);
 
             return View(model);
@@ -88,10 +85,9 @@ namespace CvProject.View.Controllers
 
         [HttpPost]
         [Authorize]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, CvCreateViewModel model, IFormFile? profileImage)
         {
-            if (!ModelState.IsValid) return View(model);
-
             var userId = _userManager.GetUserId(User);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
@@ -104,6 +100,7 @@ namespace CvProject.View.Controllers
 
         [HttpPost]
         [Authorize]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var userId = _userManager.GetUserId(User);
@@ -115,25 +112,27 @@ namespace CvProject.View.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        //sökfunktion för cvs
         public async Task<IActionResult> Index()
         {
-            var allCvs = await _context.Cvs.Include(c => c.User).ToListAsync();
+            
+            var allCvs = await _context.Cvs
+                .Include(c => c.User)
+                .Where(c => !c.User.IsPrivate)
+                .ToListAsync();
+
             return View(allCvs);
         }
 
         public async Task<IActionResult> Search(string searchString)
         {
-            
             var cvQuery = _context.Cvs
                 .Include(c => c.User)
                 .Include(c => c.Skills)
+                .Where(c => !c.User.IsPrivate) 
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                
-                
                 cvQuery = cvQuery.Where(c =>
                     c.User.UserName.Contains(searchString) ||
                     c.Skills.Any(s => s.Name.Contains(searchString))
@@ -143,4 +142,4 @@ namespace CvProject.View.Controllers
             return View("Index", await cvQuery.ToListAsync());
         }
     }
-    }
+}
