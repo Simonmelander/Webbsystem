@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using CvProject.Models;
+﻿using CvProject.Models;
+using CvProject.View.Models;
 using CvProject.View.Models.ViewModels;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CvProject.View.Controllers
 {
@@ -99,6 +100,79 @@ namespace CvProject.View.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditProfile()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var model = new EditProfileViewModel
+            {
+                Name = user.Name,
+                Email = user.Email,
+                Address = user.Address,
+                IsPrivate = user.IsPrivate
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProfile(EditProfileViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            // Uppdatera användaruppgifter
+            user.Name = model.Name;
+            user.Email = model.Email;
+            user.UserName = model.Email; // Ofta vill man att UserName ska vara samma som Email
+            user.Address = model.Address ?? string.Empty;
+            user.IsPrivate = model.IsPrivate;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                foreach (var error in updateResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+                return View(model);
+            }
+
+            // Hantera lösenordsbyte om fälten är ifyllda
+            if (!string.IsNullOrEmpty(model.NewPassword) && !string.IsNullOrEmpty(model.CurrentPassword))
+            {
+                var passwordResult = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+                if (!passwordResult.Succeeded)
+                {
+                    foreach (var error in passwordResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return View(model);
+                }
+            }
+
+            // Viktigt: Uppdatera inloggningssessionen om lösenord eller säkerhetskänslig info ändrats
+            await _signInManager.RefreshSignInAsync(user);
+
+            TempData["Message"] = "Din profil har uppdaterats!";
+            return RedirectToAction("Index", "Home"); // Eller stanna kvar på EditProfile
         }
     }
 }
