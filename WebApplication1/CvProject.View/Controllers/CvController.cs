@@ -124,14 +124,23 @@ namespace CvProject.View.Controllers
 
         public async Task<IActionResult> Search(string searchString)
         {
-            var cvQuery = _context.Cvs.Include(c => c.User).AsQueryable();
+            
+            var cvQuery = _context.Cvs
+                .Include(c => c.User)
+                .Include(c => c.Skills)
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                cvQuery = cvQuery.Where(c => c.User.UserName.Contains(searchString));
+                
+                
+                cvQuery = cvQuery.Where(c =>
+                    c.User.UserName.Contains(searchString) ||
+                    c.Skills.Any(s => s.Name.Contains(searchString))
+                );
             }
 
             return View("Index", await cvQuery.ToListAsync());
         }
     }
-}
+    }
