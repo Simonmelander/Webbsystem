@@ -137,10 +137,10 @@ namespace CvProject.View.Controllers
                 return RedirectToAction("Login");
             }
 
-            // Uppdatera användaruppgifter
+            
             user.Name = model.Name;
             user.Email = model.Email;
-            user.UserName = model.Email; // Ofta vill man att UserName ska vara samma som Email
+            ; 
             user.Address = model.Address ?? string.Empty;
             user.IsPrivate = model.IsPrivate;
 
@@ -154,7 +154,7 @@ namespace CvProject.View.Controllers
                 return View(model);
             }
 
-            // Hantera lösenordsbyte om fälten är ifyllda
+            
             if (!string.IsNullOrEmpty(model.NewPassword) && !string.IsNullOrEmpty(model.CurrentPassword))
             {
                 var passwordResult = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
@@ -168,11 +168,11 @@ namespace CvProject.View.Controllers
                 }
             }
 
-            // Viktigt: Uppdatera inloggningssessionen om lösenord eller säkerhetskänslig info ändrats
+            
             await _signInManager.RefreshSignInAsync(user);
 
             TempData["Message"] = "Din profil har uppdaterats!";
-            return RedirectToAction("Index", "Home"); // Eller stanna kvar på EditProfile
+            return RedirectToAction("Index", "Home"); 
         }
     }
 }
