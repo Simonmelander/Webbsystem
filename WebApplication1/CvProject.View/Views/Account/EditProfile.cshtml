@@ -69,6 +69,24 @@
                     </form>
                 </div>
             </div>
+            <hr class="my-5" />
+
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    Avsluta konto
+                </div>
+                <div class="card-body">
+                    <p class="text-danger">
+                        <strong>Varning:</strong> Om du avslutar ditt konto kommer din profil inte längre synas för andra användare.
+                    </p>
+
+                    <form asp-action="DeactivateAccount" method="post" onsubmit="return confirm('Är du säker på att du vill avsluta ditt konto?');">
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            Avsluta mitt konto
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>

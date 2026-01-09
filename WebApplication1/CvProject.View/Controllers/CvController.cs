@@ -117,7 +117,7 @@ namespace CvProject.View.Controllers
             
             var allCvs = await _context.Cvs
                 .Include(c => c.User)
-                .Where(c => !c.User.IsPrivate)
+                .Where(c => !c.User.IsPrivate && c.User.IsActive)
                 .ToListAsync();
 
             return View(allCvs);
@@ -128,7 +128,7 @@ namespace CvProject.View.Controllers
             var cvQuery = _context.Cvs
                 .Include(c => c.User)
                 .Include(c => c.Skills)
-                .Where(c => !c.User.IsPrivate) 
+                .Where(c => !c.User.IsPrivate && c.User.IsActive) 
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchString))

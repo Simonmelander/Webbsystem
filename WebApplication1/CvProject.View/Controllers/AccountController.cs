@@ -76,7 +76,14 @@ namespace CvProject.View.Controllers
         {
             if (ModelState.IsValid)
             {
-                
+                var user = await _userManager.FindByNameAsync(model.UserName);
+
+                if (user != null && !user.IsActive)
+                {
+                    ModelState.AddModelError(string.Empty, "Detta konto har avslutats.");
+                    return View(model);
+                }
+
                 var result = await _signInManager.PasswordSignInAsync(
                     model.UserName,
                     model.Password,
@@ -140,7 +147,6 @@ namespace CvProject.View.Controllers
             
             user.Name = model.Name;
             user.Email = model.Email;
-            ; 
             user.Address = model.Address ?? string.Empty;
             user.IsPrivate = model.IsPrivate;
 
@@ -173,6 +179,31 @@ namespace CvProject.View.Controllers
 
             TempData["Message"] = "Din profil har uppdaterats!";
             return RedirectToAction("Index", "Home"); 
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeactivateAccount()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            // Inaktivera användaren
+            user.IsActive = false;
+
+            // (Valfritt) Dölj profilen också om du vill vara extra säker
+            user.IsPrivate = true;
+
+            await _userManager.UpdateAsync(user);
+
+            // Logga ut användaren direkt
+            await _signInManager.SignOutAsync();
+
+            TempData["Message"] = "Ditt konto har avslutats.";
+            return RedirectToAction("Index", "Home");
         }
     }
 }
