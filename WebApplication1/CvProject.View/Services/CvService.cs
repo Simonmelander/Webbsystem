@@ -52,6 +52,8 @@ namespace CvProject.View.Services
 
             if (cv == null) return null;
 
+            if (!cv.User.IsActive) return null; 
+
             
             if (cv.User.IsPrivate && cv.UserId != currentUserId)
             {

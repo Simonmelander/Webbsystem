@@ -21,6 +21,8 @@ namespace CvProject.Models
         [Display(Name = "Profilbild")]
         public string? ProfilePictureUrl { get; set; }
 
+        public bool IsActive { get; set; } = true;
+
         // Relationer
         public virtual ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
     }

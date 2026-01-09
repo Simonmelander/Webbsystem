@@ -22,7 +22,7 @@ namespace CvProject.Controllers
         {
             var featured = await _context.Cvs
                 .Include(c => c.User)
-                .Where(c => c.User != null && !c.User.IsPrivate)
+                .Where(c => c.User != null && !c.User.IsPrivate && c.User.IsActive)
                 .OrderByDescending(c => c.Id)
                 .Take(5)
                 .ToListAsync();
