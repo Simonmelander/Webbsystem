@@ -7,8 +7,13 @@
 <h2>Alla projekt</h2>
 
 <p>
-    <a asp-controller="Project" asp-action="Create">Skapa nytt projekt</a>
+    <a asp-controller="Project"
+       asp-action="Create"
+       class="btn btn-primary">
+        Skapa nytt projekt
+    </a>
 </p>
+
 
 @if (Model == null || !Model.Any())
 {

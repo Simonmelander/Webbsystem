@@ -1,11 +1,14 @@
 ﻿@model CvProject.Models.Project
+
 @{
     ViewData["Title"] = "Redigera Projekt";
 }
 
 <h2>Redigera projekt</h2>
 
-<form asp-action="Edit" method="post">
+<form asp-controller="Project" asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+
     <input type="hidden" asp-for="Id" />
 
     <div class="mb-3">
@@ -20,6 +23,10 @@
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
-    <buttom typeof="submit" class="btn btn-primary">Spara ändringar</buttom>
+    <button type="submit" class="btn btn-primary">Spara ändringar</button>
     <a asp-controller="Project" asp-action="Index" class="btn btn-secondary">Tillbaka</a>
 </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
