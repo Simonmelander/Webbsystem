@@ -1,7 +1,11 @@
 ﻿@model List<CvProject.Models.Project>
+@using Microsoft.AspNetCore.Identity
+@using CvProject.Models
+@inject UserManager<User> UserManager
 
 @{
     ViewData["Title"] = "Projektlista";
+    var currentUserId = UserManager.GetUserId(User);
 }
 
 <h2>Alla projekt</h2>
@@ -25,6 +29,7 @@ else
         <thead>
             <tr>
                 <th>Titel</th>
+                <th>Skapad av</th>
                 <th>Skapad</th>
                 <th></th>
             </tr>
@@ -33,10 +38,40 @@ else
             @foreach (var p in Model)
             {
                 <tr>
-                    <td>@p.Title</td>
-                    <td>@p.CreatedDate.ToString("yyyy-MM-dd HH:mm")</td>
                     <td>
-                        <a asp-controller="Project" asp-action="Edit" asp-route-id="@p.Id">Redigera</a>
+                        <a asp-controller="Project" asp-action="Details" asp-route-id="@p.Id">
+                            @p.Title
+                        </a>
+                    </td>
+
+                    <td>
+                        @(p.Creator != null ? p.Creator.Name : "Okänd")
+                    </td>
+
+                    <td>
+                        @p.CreatedDate.ToString("yyyy-MM-dd HH:mm")
+                    </td>
+
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(currentUserId) && p.CreatorId == currentUserId)
+                        {
+                            <a asp-controller="Project" asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-secondary">
+                                Redigera
+                            </a>
+                        }
+
+
+                        <form asp-controller="Project"
+                              asp-action="Join"
+                              asp-route-id="@p.Id"
+                              method="post"
+                              style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit"
+                                    class="btn btn-sm btn-primary ms-2">
+                                Gå med
+                            </button>
+                        </form>
                     </td>
                 </tr>
             }

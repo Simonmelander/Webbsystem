@@ -32,5 +32,16 @@ namespace CvProject.View.Models
         [Display(Name = "Bekräfta nytt lösenord")]
         [Compare("NewPassword", ErrorMessage = "Lösenorden matchar inte.")]
         public string? ConfirmNewPassword { get; set; }
+
+        public List<ProjectSelectItem> AllProjects { get; set; } = new();
     }
+
+    public class ProjectSelectItem
+    {
+        public int ProjectId { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public bool IsSelected { get; set; }
+    }
+
 }
+

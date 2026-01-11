@@ -76,5 +76,62 @@ namespace CvProject.View.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Join(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+            bool ok = await _projectService.JoinProjectAsync(id, userId);
+            if (!ok) return NotFound();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddMember(int id, string userId)
+        {
+            var leaderId = _userManager.GetUserId(User);
+            if (string.IsNullOrWhiteSpace(leaderId)) return Unauthorized();
+
+            bool ok = await _projectService.AddMemberAsLeaderAsync(id, userId, leaderId);
+            if (!ok) return Forbid();
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveMember(int id, string userId)
+        {
+            var leaderId = _userManager.GetUserId(User);
+            if (string.IsNullOrWhiteSpace(leaderId)) return Unauthorized();
+
+            bool ok = await _projectService.RemoveMemberAsLeaderAsync(id, userId, leaderId);
+            if (!ok) return Forbid();
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var currentUserId = _userManager.GetUserId(User);
+
+            var model = await _projectService.GetProjectDetailsAsync(id, currentUserId);
+            if (model == null) return NotFound();
+
+            return View(model);
+        }
+
+
+
     }
 }
