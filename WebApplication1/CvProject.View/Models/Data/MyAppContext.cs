@@ -13,16 +13,18 @@ namespace CvProject.View.Models.Data
         public DbSet<Cv> Cvs { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<ProjectUser> ProjectUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            
+
             modelBuilder.Entity<ProjectUser>()
+                .ToTable("ProjectUser")
                 .HasKey(pu => new { pu.ProjectId, pu.UserId });
 
-            
+
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Sender)
                 .WithMany()

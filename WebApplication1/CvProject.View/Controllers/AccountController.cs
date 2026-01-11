@@ -3,6 +3,8 @@ using CvProject.View.Models;
 using CvProject.View.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using CvProject.View.Models.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace CvProject.View.Controllers
 {
@@ -10,14 +12,16 @@ namespace CvProject.View.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly MyAppContext _context;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, MyAppContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _context = context;
         }
 
-        
+
         [HttpGet]
         public IActionResult Register()
         {
@@ -126,6 +130,24 @@ namespace CvProject.View.Controllers
                 IsPrivate = user.IsPrivate
             };
 
+            var userId = user.Id;
+
+            var allProjects = await _context.Projects
+                .OrderByDescending(p => p.CreatedDate)
+                .ToListAsync();
+
+            var userProjectIds = await _context.ProjectUsers
+                .Where(pu => pu.UserId == userId)
+                .Select(pu => pu.ProjectId)
+                .ToListAsync();
+
+            model.AllProjects = allProjects.Select(p => new ProjectSelectItem
+            {
+                ProjectId = p.Id,
+                Title = p.Title,
+                IsSelected = userProjectIds.Contains(p.Id)
+            }).ToList();
+
             return View(model);
         }
 
@@ -133,18 +155,20 @@ namespace CvProject.View.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditProfile(EditProfileViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
                 return RedirectToAction("Login");
             }
 
-            
+            var userId = user.Id;
+
+            if (!ModelState.IsValid)
+            {
+                await LoadProjectsAsync(model, userId);
+                return View(model);
+            }
+
             user.Name = model.Name;
             user.Email = model.Email;
             user.Address = model.Address ?? string.Empty;
@@ -157,10 +181,11 @@ namespace CvProject.View.Controllers
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
+
+                await LoadProjectsAsync(model, userId);
                 return View(model);
             }
 
-            
             if (!string.IsNullOrEmpty(model.NewPassword) && !string.IsNullOrEmpty(model.CurrentPassword))
             {
                 var passwordResult = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
@@ -170,16 +195,40 @@ namespace CvProject.View.Controllers
                     {
                         ModelState.AddModelError(string.Empty, error.Description);
                     }
+
+                    await LoadProjectsAsync(model, userId);
                     return View(model);
                 }
             }
 
-            
+            var selectedProjectIds = model.AllProjects
+                .Where(p => p.IsSelected)
+                .Select(p => p.ProjectId)
+                .ToList();
+
+            var existingLinks = await _context.ProjectUsers
+                .Where(pu => pu.UserId == userId)
+                .ToListAsync();
+
+            _context.ProjectUsers.RemoveRange(existingLinks);
+
+            foreach (var projectId in selectedProjectIds)
+            {
+                _context.ProjectUsers.Add(new ProjectUser
+                {
+                    UserId = userId,
+                    ProjectId = projectId
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
             await _signInManager.RefreshSignInAsync(user);
 
             TempData["Message"] = "Din profil har uppdaterats!";
-            return RedirectToAction("Index", "Home"); 
+            return RedirectToAction("Index", "Home");
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -205,5 +254,24 @@ namespace CvProject.View.Controllers
             TempData["Message"] = "Ditt konto har avslutats.";
             return RedirectToAction("Index", "Home");
         }
+        private async Task LoadProjectsAsync(EditProfileViewModel model, string userId)
+        {
+            var allProjects = await _context.Projects
+                .OrderByDescending(p => p.CreatedDate)
+                .ToListAsync();
+
+            var userProjectIds = await _context.ProjectUsers
+                .Where(pu => pu.UserId == userId)
+                .Select(pu => pu.ProjectId)
+                .ToListAsync();
+
+            model.AllProjects = allProjects.Select(p => new ProjectSelectItem
+            {
+                ProjectId = p.Id,
+                Title = p.Title,
+                IsSelected = userProjectIds.Contains(p.Id)
+            }).ToList();
+        }
+
     }
 }

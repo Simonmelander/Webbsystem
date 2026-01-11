@@ -1,0 +1,79 @@
+﻿@model CvProject.View.Models.ViewModels.ProjectDetailsViewModel
+
+@{
+    ViewData["Title"] = "Projekt";
+}
+
+<h2>@Model.Title</h2>
+<p>@Model.Description</p>
+
+<p>
+    Skapad av <strong>@Model.CreatorName</strong><br />
+    Skapad @Model.CreatedDate.ToString("yyyy-MM-dd HH:mm")
+</p>
+
+<hr />
+
+<h3>Medlemmar</h3>
+
+@if (Model.Members == null || Model.Members.Count == 0)
+{
+    <p>Inga medlemmar ännu.</p>
+}
+else
+{
+    <ul>
+        @foreach (var m in Model.Members)
+        {
+            if (!Model.IsSignedIn && m.IsPrivate)
+            {
+                continue;
+            }
+
+            <li>
+                @m.Name
+
+                @if (Model.IsLeader)
+                {
+                    <form asp-controller="Project" asp-action="RemoveMember" method="post" style="display:inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <input type="hidden" name="userId" value="@m.UserId" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger ms-2">Ta bort</button>
+                    </form>
+                }
+            </li>
+        }
+    </ul>
+}
+
+@if (!Model.IsSignedIn)
+{
+    <p class="text-muted">Logga in för att se medlemmar med privat profil.</p>
+}
+@if (Model.IsLeader)
+{
+    <hr />
+    <h3>Lägg till medlem</h3>
+
+    @if (Model.AddableUsers == null || Model.AddableUsers.Count == 0)
+    {
+        <p>Inga fler användare att lägga till.</p>
+    }
+    else
+    {
+        <form asp-controller="Project" asp-action="AddMember" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Id" />
+
+            <select name="userId" class="form-select">
+                @foreach (var u in Model.AddableUsers)
+                {
+                    <option value="@u.UserId">@u.Name</option>
+                }
+            </select>
+
+            <button type="submit" class="btn btn-primary mt-2">Lägg till</button>
+        </form>
+    }
+}
