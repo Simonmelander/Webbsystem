@@ -22,5 +22,6 @@ namespace CvProject.Models
 
         public string? ReceiverId { get; set; }
         public virtual User? Receiver { get; set; }
+        public string? SenderName { get; set; }
     }
 }

@@ -1,99 +1,146 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using CvProject.Models;
+using CvProject.View.Models.Data;
+using CvProject.View.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using CvProject.View.Models.Data;
-using CvProject.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace CvProject.View.Controllers
 {
+    [Authorize]
     public class MessageController : Controller
     {
         private readonly MyAppContext _context;
-        private readonly UserManager<CvProject.Models.User> _userManager;
+        private readonly UserManager<User> _userManager;
 
-        public MessageController(MyAppContext context, UserManager<CvProject.Models.User> userManager)
+        public MessageController(MyAppContext context, UserManager<User> userManager)
         {
             _context = context;
             _userManager = userManager;
         }
 
-        [Authorize]
+        // 1. LISTA MEDDELANDEN (Inkorg & Skickat)
         public async Task<IActionResult> Index()
         {
             var userId = _userManager.GetUserId(User);
-            var messages = await _context.Messages
+
+            var received = await _context.Messages
                 .Include(m => m.Sender)
                 .Where(m => m.ReceiverId == userId)
                 .OrderByDescending(m => m.DateSent)
+                .ToListAsync();     
+
+            var sent = await _context.Messages
+                .Include(m => m.Receiver)
+                .Where(m => m.SenderId == userId)
+                .OrderByDescending(m => m.DateSent)
                 .ToListAsync();
 
-            return View(messages);
+            var model = new MessageViewModel
+            {
+                ReceivedMessages = received,
+                SentMessages = sent
+            };
+
+            return View(model);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Send(string receiverId, string subject, string body, string anonymousName)
+        // 2. LÄS ETT MEDDELANDE (Och markera som läst)
+        public async Task<IActionResult> Details(int id)
         {
-            if (string.IsNullOrEmpty(receiverId) || string.IsNullOrEmpty(body))
+            var userId = _userManager.GetUserId(User);
+
+            var message = await _context.Messages
+                .Include(m => m.Sender)
+                .Include(m => m.Receiver)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (message == null) return NotFound();
+
+            // Säkerhetskoll: Bara mottagare eller avsändare får läsa
+            if (message.ReceiverId != userId && message.SenderId != userId)
             {
-                return RedirectToAction("Index", "Home");
+                return Unauthorized(); // Eller NotFound() för att dölja
             }
 
-            var msg = new Message
+            // Om jag är mottagaren och öppnar det -> Markera som läst
+            if (message.ReceiverId == userId && !message.IsRead)
             {
+                message.IsRead = true;
+                await _context.SaveChangesAsync();
+            }
+
+            return View(message);
+        }
+
+        // 3. KNAPP: MARKERA SOM LÄST / OLÄST (Från inkorgen)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleReadStatus(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var message = await _context.Messages.FindAsync(id);
+
+            // Bara mottagaren kan ändra status
+            if (message != null && message.ReceiverId == userId)
+            {
+                message.IsRead = !message.IsRead; // Växlar mellan läst/oläst
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // 4. SKICKA MEDDELANDE (Från CV-profilen)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Send(string receiverId, string subject, string body, string anonymousName)
+        {
+            var senderId = _userManager.GetUserId(User);
+
+            // Om man inte är inloggad krävs ett namn
+            if (senderId == null && string.IsNullOrWhiteSpace(anonymousName))
+            {
+                return BadRequest("Du måste ange ett namn.");
+            }
+
+            var message = new Message
+            {
+                SenderId = senderId, // Kan vara null om anonym
                 ReceiverId = receiverId,
-                Subject = subject ?? "Inget ämne",
+                Subject = subject,
                 Body = body,
                 DateSent = DateTime.Now,
                 IsRead = false,
-                SenderId = _userManager.GetUserId(User)
+                SenderName = senderId == null ? anonymousName : null // Spara namn om anonym
             };
 
-            if (msg.SenderId == null)
-            {
-                msg.AnonymousName = anonymousName ?? "Anonym";
-            }
-
-            _context.Messages.Add(msg);
+            _context.Messages.Add(message);
             await _context.SaveChangesAsync();
 
-            // Sätter bekräftelsemeddelandet
-            TempData["Success"] = "Ditt meddelande har skickats!";
-
-            string referer = Request.Headers["Referer"].ToString();
-            if (string.IsNullOrEmpty(referer)) return RedirectToAction("Index", "Home");
-            return Redirect(referer);
+            return RedirectToAction("Index", "Cv"); // Eller tillbaka till profilen
         }
 
-        [Authorize]
-        public async Task<IActionResult> Read(int id)
-        {
-            var userId = _userManager.GetUserId(User);
-            var msg = await _context.Messages.FindAsync(id);
-
-            if (msg != null && msg.ReceiverId == userId)
-            {
-                msg.IsRead = true;
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction("Index");
-        }
-
-        [Authorize]
+        // 5. TA BORT MEDDELANDE
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var userId = _userManager.GetUserId(User);
-            var msg = await _context.Messages.FindAsync(id);
+            var message = await _context.Messages.FindAsync(id);
 
-            if (msg != null && msg.ReceiverId == userId)
+            // Tillåt borttagning om du är mottagare ELLER avsändare
+            if (message != null && (message.ReceiverId == userId || message.SenderId == userId))
             {
-                _context.Messages.Remove(msg);
+                _context.Messages.Remove(message);
                 await _context.SaveChangesAsync();
             }
-            return RedirectToAction("Index");
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }
