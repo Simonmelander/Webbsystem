@@ -240,15 +240,15 @@ namespace CvProject.View.Controllers
                 return RedirectToAction("Login");
             }
 
-            // Inaktivera användaren
+            
             user.IsActive = false;
 
-            // (Valfritt) Dölj profilen också om du vill vara extra säker
+            
             user.IsPrivate = true;
 
             await _userManager.UpdateAsync(user);
 
-            // Logga ut användaren direkt
+            
             await _signInManager.SignOutAsync();
 
             TempData["Message"] = "Ditt konto har avslutats.";

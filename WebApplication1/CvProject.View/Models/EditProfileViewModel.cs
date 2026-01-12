@@ -19,7 +19,7 @@ namespace CvProject.View.Models
         [Display(Name = "Privat profil")]
         public bool IsPrivate { get; set; }
 
-        // Fält för att byta lösenord (valfritt)
+        
         [DataType(DataType.Password)]
         [Display(Name = "Nuvarande lösenord (krävs endast vid byte av lösenord)")]
         public string? CurrentPassword { get; set; }

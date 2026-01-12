@@ -6,14 +6,14 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Koppla Databasen
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<MyAppContext>(options =>
     options.UseSqlServer(connectionString));
 
-// 2. Koppla Identity (Inloggningssystemet)
+
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {

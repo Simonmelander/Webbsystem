@@ -14,9 +14,9 @@ namespace CvProject.Models
         public DateTime DateSent { get; set; } = DateTime.Now;
         public bool IsRead { get; set; } = false;
 
-        public string? AnonymousName { get; set; } // För icke-inloggade
+        public string? AnonymousName { get; set; } 
 
-        // Kopplingar
+        
         public string? SenderId { get; set; }
         public virtual User? Sender { get; set; }
 

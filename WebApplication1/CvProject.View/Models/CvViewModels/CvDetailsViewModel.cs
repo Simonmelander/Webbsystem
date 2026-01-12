@@ -14,7 +14,7 @@ namespace CvProject.View.Models.CvViewModels
             {
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    // Standardbild om ingen finns
+                    
                     _profilePictureUrl = "https://as1.ftcdn.net/jpg/00/57/04/58/1000_F_57045887_HHJml6DJVxNBMqMeDqVJ0ZQDnotp5rGD.jpg";
                 }
                 else
@@ -35,7 +35,7 @@ namespace CvProject.View.Models.CvViewModels
         public List<SkillSummaryViewModel> Skills { get; set; } = new();
         public List<ProjectSummaryViewModel> Projects { get; set; } = new();
 
-        // För liknande profiler
+        
         public List<SimilarPersonViewModel> SimilarCvProfiles { get; set; } = new();
     }
 
