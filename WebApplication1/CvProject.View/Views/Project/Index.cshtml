@@ -8,16 +8,7 @@
     var currentUserId = UserManager.GetUserId(User);
 }
 
-<h2>Alla projekt</h2>
-
-<p>
-    <a asp-controller="Project"
-       asp-action="Create"
-       class="btn btn-primary">
-        Skapa nytt projekt
-    </a>
-</p>
-
+<h1 class="mb-4">Alla projekt</h1>
 
 @if (Model == null || !Model.Any())
 {
@@ -25,23 +16,28 @@
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Titel</th>
-                <th>Skapad av</th>
-                <th>Skapad</th>
-                <th></th>
-            </tr>
-        </thead>
+    <div class="card shadow-sm bg-light">
+    <div class="card-body">
+            <table class="table table-borderless mb-0 bg-light">
+                <thead>
+                    <tr>
+                        <th class="fs-5">Titel</th>
+                        <th class="fs-5">Skapad av</th>
+                        <th class="fs-5">Skapad</th>
+                        <th></th>
+                    </tr>
+                </thead>
         <tbody>
             @foreach (var p in Model)
             {
                 <tr>
                     <td>
-                        <a asp-controller="Project" asp-action="Details" asp-route-id="@p.Id">
-                            @p.Title
-                        </a>
+                                <a asp-controller="Project"
+                                   asp-action="Details"
+                                   asp-route-id="@p.Id"
+                                   class="link-info text-decoration-none fw-semibold">
+                                    @p.Title
+                                </a>
                     </td>
 
                     <td>
@@ -50,31 +46,43 @@ else
 
                     <td>
                         @p.CreatedDate.ToString("yyyy-MM-dd HH:mm")
-                    </td>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-nowrap align-items-center gap-2">
+                                    @if (!string.IsNullOrWhiteSpace(currentUserId) && p.CreatorId == currentUserId)
+                                    {
+                                        <a asp-controller="Project"
+                                           asp-action="Edit"
+                                           asp-route-id="@p.Id"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Redigera
+                                        </a>
+                                    }
 
-                    <td>
-                        @if (!string.IsNullOrWhiteSpace(currentUserId) && p.CreatorId == currentUserId)
-                        {
-                            <a asp-controller="Project" asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-secondary">
-                                Redigera
-                            </a>
-                        }
-
-
-                        <form asp-controller="Project"
-                              asp-action="Join"
-                              asp-route-id="@p.Id"
-                              method="post"
-                              style="display:inline;">
-                            @Html.AntiForgeryToken()
-                            <button type="submit"
-                                    class="btn btn-sm btn-primary ms-2">
-                                Gå med
-                            </button>
-                        </form>
-                    </td>
+                                    <form asp-controller="Project"
+                                          asp-action="Join"
+                                          asp-route-id="@p.Id"
+                                          method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit"
+                                                class="btn btn-sm btn-primary">
+                                            Gå med
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
                 </tr>
             }
         </tbody>
     </table>
+        </div>
+    </div>
+
+    <p class="mt-3">
+        <a asp-controller="Project"
+           asp-action="Create"
+           class="btn btn-success">
+            Skapa nytt projekt
+        </a>
+    </p>
 }

@@ -4,17 +4,21 @@
     ViewData["Title"] = "Projekt";
 }
 
-<h2>@Model.Title</h2>
-<p>@Model.Description</p>
+<div class="card shadow-sm bg-light">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+                <h1 class="mb-1">@Model.Title</h1>
+                <div class="text-muted">
+                    Skapad av <strong>@Model.CreatorName</strong>
+                    <span class="mx-2">•</span>
+                    @Model.CreatedDate.ToString("yyyy-MM-dd HH:mm")
+                </div>
+            </div>
+        </div>
+        <hr class="my-4" />
 
-<p>
-    Skapad av <strong>@Model.CreatorName</strong><br />
-    Skapad @Model.CreatedDate.ToString("yyyy-MM-dd HH:mm")
-</p>
-
-<hr />
-
-<h3>Medlemmar</h3>
+        <h3 class="mb-3">Medlemmar</h3>
 
 @if (Model.Members == null || Model.Members.Count == 0)
 {
@@ -22,39 +26,44 @@
 }
 else
 {
-    <ul>
-        @foreach (var m in Model.Members)
-        {
-            if (!Model.IsSignedIn && m.IsPrivate)
-            {
-                continue;
-            }
-
-            <li>
-                @m.Name
-
-                @if (Model.IsLeader)
+            <div class="list-group">
+                @foreach (var m in Model.Members)
                 {
-                    <form asp-controller="Project" asp-action="RemoveMember" method="post" style="display:inline;">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="id" value="@Model.Id" />
-                        <input type="hidden" name="userId" value="@m.UserId" />
-                        <button type="submit" class="btn btn-sm btn-outline-danger ms-2">Ta bort</button>
-                    </form>
+                    if (!Model.IsSignedIn && m.IsPrivate)
+                    {
+                        continue;
+                    }
+
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>@m.Name</span>
+
+                        @if (Model.IsLeader)
+                        {
+                            <form asp-controller="Project"
+                                  asp-action="RemoveMember"
+                                  method="post"
+                                  class="m-0">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <input type="hidden" name="userId" value="@m.UserId" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    Ta bort
+                                </button>
+                            </form>
+                        }
+                    </div>
                 }
-            </li>
-        }
-    </ul>
+            </div>
 }
 
 @if (!Model.IsSignedIn)
 {
-    <p class="text-muted">Logga in för att se medlemmar med privat profil.</p>
+         <p class="text-muted  mt-3 mb-0">Logga in för att se medlemmar med privat profil.</p>
 }
 @if (Model.IsLeader)
 {
-    <hr />
-    <h3>Lägg till medlem</h3>
+            <hr class ="my-4" />
+            <h3 class="mb-3">Lägg till medlem</h3>
 
     @if (Model.AddableUsers == null || Model.AddableUsers.Count == 0)
     {
@@ -66,14 +75,14 @@ else
             @Html.AntiForgeryToken()
             <input type="hidden" name="id" value="@Model.Id" />
 
-            <select name="userId" class="form-select">
+              <select name="userId" class="form-select" style="max-width: 320px;">
                 @foreach (var u in Model.AddableUsers)
                 {
                     <option value="@u.UserId">@u.Name</option>
                 }
             </select>
 
-            <button type="submit" class="btn btn-primary mt-2">Lägg till</button>
+            <button type="submit" class="btn btn-success mt-2">Lägg till</button>
         </form>
     }
 }

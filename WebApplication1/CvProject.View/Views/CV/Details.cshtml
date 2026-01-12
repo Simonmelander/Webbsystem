@@ -15,7 +15,7 @@
                          style="width: 180px; height: 180px; object-fit: cover; border: 5px solid #fff;" />
                 </div>
                 <div class="col-md-6 text-center text-md-start">
-                    <h1 class="display-4 fw-bold text-primary">@Model.FullName</h1>
+                    <h1 class="display-4 fw-bold">@Model.FullName</h1>
                     <p class="lead text-muted"><i class="bi bi-envelope"></i> @Model.Email</p>
 
                     @if (Model.IsOwner)
@@ -71,14 +71,15 @@
 
                 <div class="row mt-5">
                     <div class="col-lg-8">
-                        <section class="mb-5">
-                            <h3 class="fw-bold mb-4 pb-2 border-bottom">Erfarenhet</h3>
+                        <div class="card shadow-sm bg-light mb-5">
+                            <div class="card-body">
+                                <h2 class="fw-bold mb-4">Erfarenhet</h2>
                             @foreach (var experience in Model.Experiences)
                             {
                                 <div class="card border-0 mb-3 shadow-sm">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-start">
-                                            <h5 class="fw-bold text-primary mb-1">@experience.Position</h5>
+                                            <h5 class="fw-bold text-dark mb-1">@experience.Position</h5>
                                             <span class="text-muted fw-medium">
                                                 @experience.StartDate.ToString("MMM yyyy") - @(experience.EndDate.HasValue? experience.EndDate.Value.ToString("MMM yyyy") : "Nuvarande")
                                             </span>
@@ -88,20 +89,21 @@
                                     </div>
                                 </div>
                             }
-                        </section>
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-lg-8">
-                        <section class="mb-5">
-                            <h3 class="fw-bold mb-4 pb-2 border-bottom">Utbildning</h3>
+                            <div class="col-lg-8">
+                                <div class="card shadow-sm bg-light mb-5">
+                                    <div class="card-body">
+                                        <h2 class="fw-bold mb-4">Utbildning</h2>
+
                             @foreach (var education in Model.Educations)
                             {
                                 <div class="card border-0 mb-3 shadow-sm">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-start">
-                                            <h5 class="fw-bold text-primary mb-1">@education.Degree, @education.FieldOfStudy</h5>
+                                            <h5 class="fw-bold text-dark mb-1">@education.Degree, @education.FieldOfStudy</h5>
                                             <span class="text-muted fw-medium">
                                                 @education.StartDate.ToString("MMM yyyy") - @(education.EndDate.HasValue? education.EndDate.Value.ToString("MMM yyyy") : "Nuvarande")
                                             </span>
@@ -111,14 +113,14 @@
                                     </div>
                                 </div>
                             }
-                        </section>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-lg-8">
-                        <section class="mb-5">
-                            <h3 class="fw-bold mb-4 pb-2 border-bottom">Projekt</h3>
+                            <div class="card shadow-sm bg-light mb-5">
+                            <div class="card-body">
+                            <h2 class="fw-bold mb-4">Projekt</h2>
                             @if (!Model.Projects.Any())
                             {
                                 <p class="text-secondary">Inga projekt att visa.</p>
@@ -127,12 +129,11 @@
                             {
                                 <div class="card border-0 mb-3 shadow-sm">
                                     <div class="card-body">
-                                        <h5 class="fw-bold text-primary mb-2">@project.Title</h5>
+                                        <h5 class="fw-bold text-dark mb-2">@project.Title</h5>
                                         <p class="card-text text-secondary">@project.Description</p>
                                     </div>
                                 </div>
                             }
-                        </section>
                     </div>
                 </div>
 
