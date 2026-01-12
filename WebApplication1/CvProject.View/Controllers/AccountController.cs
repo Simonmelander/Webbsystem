@@ -28,42 +28,50 @@ namespace CvProject.View.Controllers
             return View();
         }
 
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (ModelState.IsValid)
+            try
             {
-                
-                var user = new User
+                if (ModelState.IsValid)
                 {
-                    UserName = model.UserName,
-                    Email = model.Email,
-                    Name = model.Name,
-                    Address = model.Address ?? string.Empty, 
-                    IsPrivate = false 
-                };
 
-                
-                var result = await _userManager.CreateAsync(user, model.Password);
+                    var user = new User
+                    {
+                        UserName = model.UserName,
+                        Email = model.Email,
+                        Name = model.Name,
+                        Address = model.Address ?? string.Empty,
+                        IsPrivate = false
+                    };
 
-                if (result.Succeeded)
-                {
-                    
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", "Home");
+
+                    var result = await _userManager.CreateAsync(user, model.Password);
+
+                    if (result.Succeeded)
+                    {
+
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        return RedirectToAction("Index", "Home");
+                    }
+
+
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
                 }
 
-                
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
+
+                return View(model);
             }
-
-            
-            return View(model);
+            catch (Exception)
+            {
+                ModelState.AddModelError(string.Empty, "Ett oväntat fel inträffade. Vänligen försök igen senare.");
+                return View(model);
+            }
         }
 
         
@@ -78,30 +86,38 @@ namespace CvProject.View.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            if (ModelState.IsValid)
+            try
             {
-                var user = await _userManager.FindByNameAsync(model.UserName);
-
-                if (user != null && !user.IsActive)
+                if (ModelState.IsValid)
                 {
-                    ModelState.AddModelError(string.Empty, "Detta konto har avslutats.");
-                    return View(model);
+                    var user = await _userManager.FindByNameAsync(model.UserName);
+
+                    if (user != null && !user.IsActive)
+                    {
+                        ModelState.AddModelError(string.Empty, "Detta konto har avslutats.");
+                        return View(model);
+                    }
+
+                    var result = await _signInManager.PasswordSignInAsync(
+                        model.UserName,
+                        model.Password,
+                        model.RememberMe,
+                        lockoutOnFailure: false);
+
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction("Index", "Home");
+                    }
+
+                    ModelState.AddModelError(string.Empty, "Felaktigt användarnamn eller lösenord.");
                 }
-
-                var result = await _signInManager.PasswordSignInAsync(
-                    model.UserName,
-                    model.Password,
-                    model.RememberMe,
-                    lockoutOnFailure: false);
-
-                if (result.Succeeded)
-                {
-                    return RedirectToAction("Index", "Home");
-                }
-
-                ModelState.AddModelError(string.Empty, "Felaktigt användarnamn eller lösenord.");
+                return View(model);
             }
-            return View(model);
+            catch (Exception)
+            {
+                ModelState.AddModelError(string.Empty, "Ett oväntat fel inträffade. Vänligen försök igen senare.");
+                return View(model);
+            }
         }
 
         
@@ -234,44 +250,58 @@ namespace CvProject.View.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeactivateAccount()
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
+            try
             {
-                return RedirectToAction("Login");
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return RedirectToAction("Login");
+                }
+
+
+                user.IsActive = false;
+
+
+                user.IsPrivate = true;
+
+                await _userManager.UpdateAsync(user);
+
+
+                await _signInManager.SignOutAsync();
+
+                TempData["Message"] = "Ditt konto har avslutats.";
+                return RedirectToAction("Index", "Home");
             }
-
-            
-            user.IsActive = false;
-
-            
-            user.IsPrivate = true;
-
-            await _userManager.UpdateAsync(user);
-
-            
-            await _signInManager.SignOutAsync();
-
-            TempData["Message"] = "Ditt konto har avslutats.";
-            return RedirectToAction("Index", "Home");
+            catch (Exception)
+            {
+                TempData["Error"] = "Ett oväntat fel inträffade. Vänligen försök igen senare.";
+                return RedirectToAction("EditProfile");
+            }
         }
         private async Task LoadProjectsAsync(EditProfileViewModel model, string userId)
         {
-            var allProjects = await _context.Projects
-                .OrderByDescending(p => p.CreatedDate)
-                .ToListAsync();
-
-            var userProjectIds = await _context.ProjectUsers
-                .Where(pu => pu.UserId == userId)
-                .Select(pu => pu.ProjectId)
-                .ToListAsync();
-
-            model.AllProjects = allProjects.Select(p => new ProjectSelectItem
+            try
             {
-                ProjectId = p.Id,
-                Title = p.Title,
-                IsSelected = userProjectIds.Contains(p.Id)
-            }).ToList();
-        }
+                var allProjects = await _context.Projects
+                               .OrderByDescending(p => p.CreatedDate)
+                               .ToListAsync();
 
+                var userProjectIds = await _context.ProjectUsers
+                    .Where(pu => pu.UserId == userId)
+                    .Select(pu => pu.ProjectId)
+                    .ToListAsync();
+
+                model.AllProjects = allProjects.Select(p => new ProjectSelectItem
+                {
+                    ProjectId = p.Id,
+                    Title = p.Title,
+                    IsSelected = userProjectIds.Contains(p.Id)
+                }).ToList();
+            }
+            catch (Exception)
+            {
+                model.AllProjects = new List<ProjectSelectItem>();
+            }
+        }
     }
 }

@@ -41,34 +41,48 @@ namespace CvProject.View.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CvCreateViewModel viewModel, IFormFile? profileImage)
         {
-            string? currentUserId = _userManager.GetUserId(User);
-            if (string.IsNullOrWhiteSpace(currentUserId)) return Unauthorized();
+            try
+            {
+                string? currentUserId = _userManager.GetUserId(User);
+                if (string.IsNullOrWhiteSpace(currentUserId)) return Unauthorized();
 
-            if (!ModelState.IsValid) return View(viewModel);
+                if (!ModelState.IsValid) return View(viewModel);
 
-            await _cvService.CreateCvAsync(viewModel, currentUserId, profileImage);
-            return RedirectToAction("Index", "Home");
+                await _cvService.CreateCvAsync(viewModel, currentUserId, profileImage);
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Ett fel uppstod vid skapandet av CVt: " + ex.Message);
+                return View(viewModel);
+            }
         }
 
         public async Task<IActionResult> Details(int id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            bool isAuthenticated = User.Identity.IsAuthenticated;
-
-            var model = await _cvService.GetCvDetailsAsync(id, userId);
-
-            if (model == null) return NotFound();
-
-            if (!model.IsOwner)
+            try
             {
-                await _cvService.IncrementCvVisitsAsync(id);
-                model.VisitCount += 1;
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                bool isAuthenticated = User.Identity.IsAuthenticated;
+
+                var model = await _cvService.GetCvDetailsAsync(id, userId);
+
+                if (model == null) return NotFound();
+
+                if (!model.IsOwner)
+                {
+                    await _cvService.IncrementCvVisitsAsync(id);
+                    model.VisitCount += 1;
+                }
+
+                model.SimilarCvProfiles = await _cvService.GetSimilarCvsAsync(id, isAuthenticated);
+
+                return View(model);
             }
-
-            
-            model.SimilarCvProfiles = await _cvService.GetSimilarCvsAsync(id, isAuthenticated);
-
-            return View(model);
+            catch
+            {
+                return NotFound();
+            }
         }
 
         [HttpGet]
@@ -89,14 +103,22 @@ namespace CvProject.View.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, CvCreateViewModel model, IFormFile? profileImage)
         {
-            var userId = _userManager.GetUserId(User);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            try
+            {
+                var userId = _userManager.GetUserId(User);
+                if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            bool success = await _cvService.UpdateCvAsync(id, model, userId, profileImage);
+                bool success = await _cvService.UpdateCvAsync(id, model, userId, profileImage);
 
-            if (!success) return NotFound();
+                if (!success) return NotFound();
 
-            return RedirectToAction("Details", new { id });
+                return RedirectToAction("Details", new { id });
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Ett fel uppstod vid uppdateringen av CVt: " + ex.Message);
+                return View(model);
+            }
         }
 
         [HttpPost]
@@ -117,7 +139,7 @@ namespace CvProject.View.Controllers
         {
             var query = _context.Cvs.Include(c => c.User).AsQueryable();
 
-            
+
             if (!User.Identity.IsAuthenticated)
             {
                 query = query.Where(c => !c.User.IsPrivate);
@@ -134,7 +156,7 @@ namespace CvProject.View.Controllers
                 .Include(c => c.Skills)
                 .AsQueryable();
 
-            
+
             if (!User.Identity.IsAuthenticated)
             {
                 cvQuery = cvQuery.Where(c => !c.User.IsPrivate);
@@ -159,13 +181,20 @@ namespace CvProject.View.Controllers
 
         public async Task<IActionResult> DownloadXml(int id)
         {
-            var userId = _userManager.GetUserId(User);
+            try
+            {
+                var userId = _userManager.GetUserId(User);
 
-            string? xmlData = await _cvService.GetCvXmlAsync(id, userId);
+                string? xmlData = await _cvService.GetCvXmlAsync(id, userId);
 
-            if (xmlData == null) return NotFound();
+                if (xmlData == null) return NotFound();
 
-            return File(System.Text.Encoding.UTF8.GetBytes(xmlData), "application/xml", "cv_export.xml");
+                return File(System.Text.Encoding.UTF8.GetBytes(xmlData), "application/xml", "cv_export.xml");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Ett fel uppstod vid genereringen av XML-filen: " + ex.Message);
+            }
         }
     }
 }
