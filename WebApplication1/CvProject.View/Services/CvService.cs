@@ -167,7 +167,7 @@ namespace CvProject.View.Services
             }
         }
 
-        public async Task<List<SimilarPersonViewModel>> GetSimilarCvsAsync(int currentCvId)
+        public async Task<List<SimilarPersonViewModel>> GetSimilarCvsAsync(int currentCvId, bool isAuthenticated)
         {
             var currentCv = await _db.Cvs
                 .Include(c => c.Skills)

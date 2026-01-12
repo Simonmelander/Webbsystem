@@ -53,8 +53,8 @@ namespace CvProject.View.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isAuthenticated = User.Identity.IsAuthenticated;
 
-            
             var model = await _cvService.GetCvDetailsAsync(id, userId);
 
             if (model == null) return NotFound();
@@ -65,7 +65,8 @@ namespace CvProject.View.Controllers
                 model.VisitCount += 1;
             }
 
-            model.SimilarCvProfiles = await _cvService.GetSimilarCvsAsync(id);
+            
+            model.SimilarCvProfiles = await _cvService.GetSimilarCvsAsync(id, isAuthenticated);
 
             return View(model);
         }
@@ -114,33 +115,37 @@ namespace CvProject.View.Controllers
 
         public async Task<IActionResult> Index()
         {
-            
-            var allCvs = await _context.Cvs
-                .Include(c => c.User)
-                .Where(c => !c.User.IsPrivate && c.User.IsActive)
-                .ToListAsync();
+            var query = _context.Cvs.Include(c => c.User).AsQueryable();
 
+            
+            if (!User.Identity.IsAuthenticated)
+            {
+                query = query.Where(c => !c.User.IsPrivate);
+            }
+
+            var allCvs = await query.ToListAsync();
             return View(allCvs);
         }
 
         public async Task<IActionResult> Search(string searchString)
         {
-            
             var cvQuery = _context.Cvs
                 .Include(c => c.User)
                 .Include(c => c.Skills)
-                .Where(c => !c.User.IsPrivate)
                 .AsQueryable();
+
+            
+            if (!User.Identity.IsAuthenticated)
+            {
+                cvQuery = cvQuery.Where(c => !c.User.IsPrivate);
+            }
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                
                 var searchTerms = searchString.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-                
                 foreach (var term in searchTerms)
                 {
-                    /
                     cvQuery = cvQuery.Where(c =>
                         c.User.Name.Contains(term) ||
                         c.User.UserName.Contains(term) ||
