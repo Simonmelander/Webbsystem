@@ -49,15 +49,15 @@
                         <div class="card-body">
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-muted small">Skola</label>
+                                    <label class="form-label fw-bold text-muted small required">Skola</label>
                                     <input asp-for="Educations[i].School" class="form-control" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-muted small">Examen</label>
+                                    <label class="form-label fw-bold text-muted small required">Examen</label>
                                     <input asp-for="Educations[i].Degree" class="form-control" />
                                 </div>
                                 <div class="col-md-12">
-                                    <label class="form-label fw-bold text-muted small">Ämne/Inriktning</label>
+                                    <label class="form-label fw-bold text-muted small required">Ämne/Inriktning</label>
                                     <input asp-for="Educations[i].FieldOfStudy" class="form-control" />
                                 </div>
 
@@ -68,7 +68,7 @@
 
 
                                 <div class="col-md-4">
-                                    <label class="form-label fw-bold text-muted small">Startdatum</label>
+                                    <label class="form-label fw-bold text-muted small required">Startdatum</label>
                                     <input asp-for="Educations[i].StartDate" type="date" class="form-control" />
                                 </div>
                                 <div class="col-md-4">
@@ -100,11 +100,11 @@
                         <div class="card-body">
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-muted small">Företag</label>
+                                    <label class="form-label fw-bold text-muted small required">Företag</label>
                                     <input asp-for="Experiences[i].Company" class="form-control" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-muted small">Roll</label>
+                                    <label class="form-label fw-bold text-muted small required">Roll</label>
                                     <input asp-for="Experiences[i].Position" class="form-control" />
                                 </div>
                                 <div class="col-md-12">
@@ -112,7 +112,7 @@
                                     <textarea asp-for="Experiences[i].Description" class="form-control" rows="3"></textarea>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-muted small">Startdatum</label>
+                                    <label class="form-label fw-bold text-muted small required">Startdatum</label>
                                     <input asp-for="Experiences[i].StartDate" type="date" class="form-control" />
                                 </div>
                                 <div class="col-md-6">
@@ -202,3 +202,10 @@
         }
     </script>
 }
+
+<style>
+    label.required::after {
+        content: " *";
+        color: red;
+    }
+</style>
