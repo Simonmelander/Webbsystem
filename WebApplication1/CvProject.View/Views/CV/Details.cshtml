@@ -25,6 +25,13 @@
                     }
                 </div>
 
+                <a asp-controller="Cv" 
+   asp-action="DownloadXml" 
+   asp-route-id="@Model.Id" 
+   class="btn btn-primary">
+    <i class="fa fa-download"></i> Ladda ner som XML
+</a>
+
                 @if (!Model.IsOwner)
                 {
                     <div class="col-md-3 mt-4 mt-md-0">
