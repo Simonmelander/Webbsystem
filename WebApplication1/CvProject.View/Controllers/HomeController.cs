@@ -20,14 +20,32 @@ namespace CvProject.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var featured = await _context.Cvs
+
+            var cvQuery = _context.Cvs
                 .Include(c => c.User)
-                .Where(c => c.User != null && !c.User.IsPrivate && c.User.IsActive)
+                .Where(c => c.User != null && c.User.IsActive);
+
+            if (!User.Identity.IsAuthenticated)
+            {
+                cvQuery = cvQuery.Where(c => !c.User.IsPrivate);
+            }
+
+            var featured = await cvQuery
                 .OrderByDescending(c => c.Id)
                 .Take(5)
                 .ToListAsync();
 
-            var latestProject = await _context.Projects
+            var projectQuery = _context.Projects
+                .Include(p => p.ProjectUsers)
+                .ThenInclude(pu => pu.User)
+                .AsQueryable();
+
+            if (!User.Identity.IsAuthenticated)
+            {
+                projectQuery = projectQuery.Where(p => p.ProjectUsers.Any(pu => !pu.User.IsPrivate));
+            }
+
+            var latestProject = await projectQuery
                 .OrderByDescending(p => p.CreatedDate)
                 .FirstOrDefaultAsync();
 
