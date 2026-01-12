@@ -141,5 +141,16 @@ namespace CvProject.View.Controllers
 
             return View("Index", await cvQuery.ToListAsync());
         }
+
+        public async Task<IActionResult> DownloadXml(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            string? xmlData = await _cvService.GetCvXmlAsync(id, userId);
+
+            if (xmlData == null) return NotFound();
+
+            return File(System.Text.Encoding.UTF8.GetBytes(xmlData), "application/xml", "cv_export.xml");
+        }
     }
 }

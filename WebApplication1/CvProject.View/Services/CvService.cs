@@ -236,5 +236,52 @@ namespace CvProject.View.Services
                 .Include(c => c.Skills)
                 .FirstOrDefaultAsync(c => c.Id == cvId);
         }
+
+        public async Task<string> GetCvXmlAsync(int cvId, string? currentUserId)
+        {
+            var cv = await GetCvDetailsAsync(cvId, currentUserId);
+
+            if (cv == null) return string.Empty;
+
+            var exportData = new CvExportDto
+            {
+                FullName = cv.User.Name,
+                Email = cv.User.Email ?? string.Empty,
+
+                Experiences = cv.Experiences.Select(e => new ExperienceExportDto
+                {
+                    Company = e.Company,
+                    Position = e.Position,
+                    StartDate = e.StartDate,
+                    EndDate = e.EndDate,
+                    Description = e.Description
+                }).ToList(),
+
+                Educations = cv.Educations.Select(e => new EducationExportDto
+                {
+                    School = e.School,
+                    Degree = e.Degree,
+                    FieldOfStudy = e.FieldOfStudy,
+                    StartDate = e.StartDate,
+                    EndDate = e.EndDate,
+                    Description = e.Description
+                }).ToList(),
+
+                Skills = cv.Skills.Select(s => new SkillExportDto
+                {
+                    Name = s.Name
+                }).ToList(),
+
+                // Mappa projekt via User -> ProjectUsers -> Project
+                Projects = cv.User.ProjectUsers.Select(p => new ProjectExportDto
+                {
+                    Title = p.Project.Title,
+                    Description = p.Project.Description
+                }).ToList()
+            };
+
+            return SerializationService.SerializeToXML(exportData);
+        }
+
     }
 }
