@@ -52,10 +52,10 @@ namespace CvProject.View.Services
 
             if (cv == null) return null;
 
-            if (!cv.User.IsActive) return null; 
+            if (!cv.User.IsActive) return null;
 
-            
-            if (cv.User.IsPrivate && cv.UserId != currentUserId)
+
+            if (cv.User.IsPrivate && string.IsNullOrEmpty(currentUserId))
             {
                 return null;
             }
@@ -181,12 +181,17 @@ namespace CvProject.View.Services
                 .Select(s => s.Name.ToLower().Trim())
                 .ToList();
 
-            
-            var otherCvs = await _db.Cvs
+            var query = _db.Cvs
                 .Include(c => c.User)
                 .Include(c => c.Skills)
-                .Where(c => c.Id != currentCvId && !c.User.IsPrivate)
-                .ToListAsync();
+                .Where(c => c.Id != currentCvId && c.User.IsActive);
+
+            if (!isAuthenticated)
+            {
+                query = query.Where(c => !c.User.IsPrivate);
+            }
+
+            var otherCvs = await query.ToListAsync();
 
             var similarProfiles = new List<SimilarPersonViewModel>();
 
