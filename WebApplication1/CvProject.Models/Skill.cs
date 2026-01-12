@@ -10,6 +10,9 @@ namespace CvProject.Models
     {
         [Key]
         public int Id { get; set; }
+
+        [Required(ErrorMessage = "Färdighetens namn måste anges.")]
+        [StringLength(50, ErrorMessage = "Färdighetens namn får vara högst 50 tecken.")]
         public string Name { get; set; }
         public int CvId { get; set; }
         [ForeignKey(nameof(CvId))]

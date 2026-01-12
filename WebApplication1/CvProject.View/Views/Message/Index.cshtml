@@ -1,48 +1,227 @@
-﻿@model IEnumerable<CvProject.Models.Message>
+﻿@using CvProject.Models
+@model CvProject.View.Models.ViewModels.MessageViewModel
 
-<div class="container py-4">
-    <h2>Min Inkorg</h2>
-    <hr />
+@{
+    ViewData["Title"] = "Mina Meddelanden";
+}
 
-    @if (!Model.Any())
-    {
-        <div class="alert alert-info">Du har inga meddelanden just nu.</div>
-    }
-    else
-    {
-        <div class="list-group">
-            @foreach (var msg in Model)
-            {
-                string fromName = "Okänd";
-                if (msg.Sender != null)
-                {
-                    fromName = msg.Sender.UserName;
-                }
-                else
-                {
-                    fromName = msg.AnonymousName + " (Ej inloggad)";
-                }
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">Mina Meddelanden</h1>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newMessageModal">
+            <i class="bi bi-pencil-square"></i> Skriv nytt
+        </button>
+    </div>
 
-                string colorClass = msg.IsRead ? "bg-white" : "list-group-item-warning";
+    <ul class="nav nav-tabs mb-4" id="messageTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="inbox-tab" data-bs-toggle="tab" data-bs-target="#inbox" type="button" role="tab" aria-selected="true">Inkorg</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button" role="tab" aria-selected="false">Skickat</button>
+        </li>
+    </ul>
 
-                <div class="list-group-item @colorClass mb-3 border rounded shadow-sm">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">@msg.Subject</h5>
-                        <small class="text-muted">@msg.DateSent.ToString("yyyy-MM-dd HH:mm")</small>
-                    </div>
-                    <p class="mb-1"><strong>Från:</strong> @fromName</p>
-                    <p class="mb-1 p-2 bg-light rounded">@msg.Body</p>
+    <div class="tab-content" id="messageTabsContent">
 
-                    <div class="mt-2">
-                        @if (!msg.IsRead)
-                        {
-                            <a asp-controller="Message" asp-action="Read" asp-route-id="@msg.Id" class="btn btn-sm btn-success">Markera som läst</a>
-                        }
+        <div class="tab-pane fade show active" id="inbox" role="tabpanel" aria-labelledby="inbox-tab">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    @if (Model.ReceivedMessages == null || !Enumerable.Any(Model.ReceivedMessages))
+                    {
+                        <p class="text-muted text-center py-3">Din inkorg är tom.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Från</th>
+                                        <th>Ämne</th>
+                                        <th>Datum</th>
+                                        <th>Status</th>
+                                        <th class="text-end" style="min-width: 180px;">Åtgärd</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var msg in Model.ReceivedMessages)
+                                    {
+                                        <tr class="@(msg.IsRead ? "" : "fw-bold bg-light")">
+                                            <td>@(msg.Sender != null ? msg.Sender.Name : (msg.SenderName ?? "Anonym"))</td>
+                                            <td>@msg.Subject</td>
+                                            <td>@msg.DateSent.ToString("yyyy-MM-dd HH:mm")</td>
+                                            <td>
+                                                @if (msg.IsRead)
+                                                {
+                                                    <span class="badge bg-secondary">Läst</span>
+                                                }
+                                                else
+                                                {
 
-                        <a asp-controller="Message" asp-action="Delete" asp-route-id="@msg.Id" class="btn btn-sm btn-danger" onclick="return confirm('Ta bort?');">Ta bort</a>
-                    </div>
+                                                    <span class="badge bg-success">Oläst</span>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                <button type="button" class="btn btn-sm btn-outline-primary me-1"
+                                                        data-bs-toggle="modal" data-bs-target="#readMessageModal"
+                                                        data-from="@(msg.Sender != null ? msg.Sender.Name : (msg.SenderName ?? "Anonym"))"
+                                                        data-subject="@msg.Subject"
+                                                        data-body="@msg.Body"
+                                                        data-date="@msg.DateSent.ToString("f")"
+                                                        onclick="fillReadModal(this)">
+                                                    <i class="bi bi-eye"></i> Läs
+                                                </button>
+
+                                                @if (!msg.IsRead)
+                                                {
+                                                    <form asp-action="ToggleReadStatus" asp-route-id="@msg.Id" method="post" class="d-inline">
+                                                        <button type="submit" class="btn btn-sm btn-outline-success me-1" title="Markera som läst">
+                                                            <i class="bi bi-check-lg"></i>
+                                                        </button>
+                                                    </form>
+                                                }
+
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(@msg.Id)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
                 </div>
-            }
+            </div>
         </div>
-    }
+
+        <div class="tab-pane fade" id="sent" role="tabpanel" aria-labelledby="sent-tab">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    @if (Model.SentMessages == null || !Enumerable.Any(Model.SentMessages))
+                    {
+                        <p class="text-muted text-center py-3">Inget skickat än.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Till</th>
+                                        <th>Ämne</th>
+                                        <th>Datum</th>
+                                        <th class="text-end">Åtgärd</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var msg in Model.SentMessages)
+                                    {
+                                        <tr>
+                                            <td>@(msg.Receiver != null ? msg.Receiver.Name : "Okänd")</td>
+                                            <td>@msg.Subject</td>
+                                            <td>@msg.DateSent.ToString("yyyy-MM-dd HH:mm")</td>
+                                            <td class="text-end">
+                                                <button type="button" class="btn btn-sm btn-outline-primary me-1"
+                                                        data-bs-toggle="modal" data-bs-target="#readMessageModal"
+                                                        data-from="Till: @(msg.Receiver != null ? msg.Receiver.Name : "Okänd")"
+                                                        data-subject="@msg.Subject"
+                                                        data-body="@msg.Body"
+                                                        data-date="@msg.DateSent.ToString("f")"
+                                                        onclick="fillReadModal(this)">
+                                                    <i class="bi bi-eye"></i> Läs
+                                                </button>
+
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(@msg.Id)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<div class="modal fade" id="readMessageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold" id="modalSubject">Ämne</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="d-flex justify-content-between text-muted small mb-3">
+                    <span id="modalFrom" class="fw-bold text-dark">Från: ...</span>
+                    <span id="modalDate">Datum</span>
+                </div>
+                <hr />
+                <div id="modalBody" class="mt-3" style="white-space: pre-wrap;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Stäng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteMessageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Ta bort meddelande</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Är du säker på att du vill radera detta meddelande?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                <form asp-controller="Message" asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="messageIdToDelete" name="id" value="" />
+                    <button type="submit" class="btn btn-danger">Radera</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newMessageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nytt meddelande</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>För att skicka meddelande, gå till en användares profil.</p>
+                <a asp-controller="Cv" asp-action="Index" class="btn btn-primary w-100">Hitta användare</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+   
+    function fillReadModal(button) {
+        document.getElementById('modalSubject').innerText = button.getAttribute('data-subject');
+        document.getElementById('modalFrom').innerText = "Avsändare: " + button.getAttribute('data-from');
+        document.getElementById('modalDate').innerText = button.getAttribute('data-date');
+        document.getElementById('modalBody').innerText = button.getAttribute('data-body');
+    }
+
+    
+    function openDeleteModal(id) {
+        document.getElementById('messageIdToDelete').value = id;
+        var myModal = new bootstrap.Modal(document.getElementById('deleteMessageModal'));
+        myModal.show();
+    }
+</script>

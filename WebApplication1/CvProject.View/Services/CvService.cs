@@ -7,43 +7,62 @@ namespace CvProject.View.Services
 {
     public class CvService
     {
-        private readonly MyAppContext _db;
+        private readonly MyAppContext _context;
         private readonly IWebHostEnvironment _hostingEnvironment;
 
         public CvService(MyAppContext db, IWebHostEnvironment hostingEnvironment)
         {
-            _db = db;
+            _context = db;
             _hostingEnvironment = hostingEnvironment;
         }
 
         public async Task CreateCvAsync(CvCreateViewModel viewModel, string userId, IFormFile? profileImage)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
-
-            if (profileImage != null && profileImage.Length > 0 && user != null)
+            try
             {
-                string uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "images");
-                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
-                string uniqueFileName = Guid.NewGuid().ToString() + "_" + profileImage.FileName;
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                if (user == null)
                 {
-                    await profileImage.CopyToAsync(fileStream);
+                    throw new Exception("Användaren hittades inte.");
                 }
-                user.ProfilePictureUrl = "/images/" + uniqueFileName;
+
+                if (profileImage != null && profileImage.Length > 0)
+                {
+                    try
+                    {
+                        string uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "images");
+                        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + profileImage.FileName;
+                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await profileImage.CopyToAsync(fileStream);
+                        }
+                        user.ProfilePictureUrl = "/images/" + uniqueFileName;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception("Ett fel uppstod vid uppladdning av profilbild: " + ex.Message);
+                    }
+                }
+
+                var newCv = new Cv
+                {
+                    UserId = userId,
+                };
+
+                AssignValidEntriesToCv(viewModel, newCv);
+
+                _context.Cvs.Add(newCv);
+                await _context.SaveChangesAsync();
             }
-
-            var newCv = new Cv
+            catch (Exception ex)
             {
-                UserId = userId,
-            };
-
-            AssignValidEntriesToCv(viewModel, newCv);
-
-            _db.Cvs.Add(newCv);
-            await _db.SaveChangesAsync();
+                throw new Exception("Ett fel uppstod vid skapandet av CV: " + ex.Message);
+            }
         }
 
         public async Task<CvDetailsViewModel?> GetCvDetailsAsync(int cvId, string? currentUserId)
@@ -54,8 +73,8 @@ namespace CvProject.View.Services
 
             if (!cv.User.IsActive) return null;
 
-
             if (cv.User.IsPrivate && string.IsNullOrEmpty(currentUserId))
+
             {
                 return null;
             }
@@ -122,54 +141,83 @@ namespace CvProject.View.Services
 
         public async Task<bool> UpdateCvAsync(int cvId, CvCreateViewModel viewModel, string userId, IFormFile? profileImage)
         {
-            Cv? cv = await GetCvAsync(cvId);
-            if (cv == null || cv.UserId != userId) return false;
-
-            if (profileImage != null && profileImage.Length > 0)
+            try
             {
-                string uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "images");
-                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-                string uniqueFileName = Guid.NewGuid().ToString() + "_" + profileImage.FileName;
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null)
                 {
-                    await profileImage.CopyToAsync(fileStream);
+                    throw new Exception("Användaren hittades inte.");
                 }
-                cv.User.ProfilePictureUrl = "/images/" + uniqueFileName;
+
+                Cv? cv = await GetCvAsync(cvId);
+                if (cv == null || cv.UserId != userId)
+                {
+                    return false;
+                }
+
+                if (profileImage != null && profileImage.Length > 0)
+                {
+                    try
+                    {
+                        string uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "images");
+                        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + profileImage.FileName;
+                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await profileImage.CopyToAsync(fileStream);
+                        }
+                        user.ProfilePictureUrl = "/images/" + uniqueFileName;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception("Ett fel uppstod vid uppladdning av profilbild: " + ex.Message);
+                    }
+
+                }
+
+                AssignValidEntriesToCv(viewModel, cv);
+                _context.Update(cv);
+                await _context.SaveChangesAsync();
+                return true;
             }
-
-            AssignValidEntriesToCv(viewModel, cv);
-
-            _db.Update(cv);
-            await _db.SaveChangesAsync();
-            return true;
+            catch (Exception ex)
+            {
+                throw new Exception("Ett fel uppstod vid uppdatering av CV: " + ex.Message);
+            }
         }
 
         public async Task<bool> DeleteCvAsync(int cvId, string userId)
         {
             Cv? cv = await GetCvAsync(cvId);
             if (cv == null || cv.UserId != userId) return false;
-            _db.Cvs.Remove(cv);
-            await _db.SaveChangesAsync();
+            _context.Cvs.Remove(cv);
+            await _context.SaveChangesAsync();
             return true;
         }
 
         public async Task IncrementCvVisitsAsync(int cvId)
         {
-            Cv? cv = await GetCvAsync(cvId);
-            if (cv != null)
+            try
             {
+                Cv? cv = await GetCvAsync(cvId);
+                if (cv == null) throw new Exception("CV not found.");
+
                 cv.Visits++;
-                _db.Update(cv);
-                await _db.SaveChangesAsync();
+                _context.Update(cv);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw new Exception("An error occurred while incrementing CV visits.");
             }
         }
 
         public async Task<List<SimilarPersonViewModel>> GetSimilarCvsAsync(int currentCvId, bool isAuthenticated)
         {
-            var currentCv = await _db.Cvs
+            var currentCv = await _context.Cvs
                 .Include(c => c.Skills)
                 .FirstOrDefaultAsync(c => c.Id == currentCvId);
 
@@ -181,7 +229,8 @@ namespace CvProject.View.Services
                 .Select(s => s.Name.ToLower().Trim())
                 .ToList();
 
-            var query = _db.Cvs
+            var query = _context.Cvs
+
                 .Include(c => c.User)
                 .Include(c => c.Skills)
                 .Where(c => c.Id != currentCvId && c.User.IsActive);
@@ -219,6 +268,11 @@ namespace CvProject.View.Services
                 .ToList();
         }
 
+        /// <summary>
+        /// Assigns only valid entries from the ViewModel to the Cv entity.
+        /// </summary>
+        /// <param name="viewModel"></param>
+        /// <param name="cv"></param>
         private static void AssignValidEntriesToCv(CvCreateViewModel viewModel, Cv cv)
         {
             if (cv.Educations != null) cv.Educations.Clear();
@@ -232,14 +286,21 @@ namespace CvProject.View.Services
 
         private async Task<Cv?> GetCvAsync(int cvId)
         {
-            return await _db.Cvs
-                .Include(c => c.User)
-                .ThenInclude(u => u.ProjectUsers)
-                .ThenInclude(pu => pu.Project)
-                .Include(c => c.Educations)
-                .Include(c => c.Experiences)
-                .Include(c => c.Skills)
-                .FirstOrDefaultAsync(c => c.Id == cvId);
+            try
+            {
+                return await _context.Cvs
+    .Include(c => c.User)
+    .ThenInclude(u => u.ProjectUsers)
+    .ThenInclude(pu => pu.Project)
+    .Include(c => c.Educations)
+    .Include(c => c.Experiences)
+    .Include(c => c.Skills)
+    .FirstOrDefaultAsync(c => c.Id == cvId);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Ett fel uppstod vid hämtning av CV.");
+            }
         }
 
         public async Task<string> GetCvXmlAsync(int cvId, string? currentUserId)
@@ -277,7 +338,6 @@ namespace CvProject.View.Services
                     Name = s.Name
                 }).ToList(),
 
-                // Mappa projekt via User -> ProjectUsers -> Project
                 Projects = cv.User.ProjectUsers.Select(p => new ProjectExportDto
                 {
                     Title = p.Project.Title,
