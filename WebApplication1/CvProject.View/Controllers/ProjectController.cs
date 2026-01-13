@@ -3,6 +3,7 @@ using CvProject.View.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CvProject.View.Controllers
 {
@@ -41,6 +42,20 @@ namespace CvProject.View.Controllers
             if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
 
             await _projectService.CreateAsync(project, userId);
+
+            return RedirectToAction(nameof(Index));
+        }
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var currentUserId = _userManager.GetUserId(User);
+            if (string.IsNullOrWhiteSpace(currentUserId)) return Unauthorized();
+
+            bool ok = await _projectService.DeleteAsync(id, currentUserId);
+
+            if (!ok) return Forbid();
 
             return RedirectToAction(nameof(Index));
         }

@@ -86,6 +86,28 @@ namespace CvProject.View.Services
                 throw new Exception("Error updating project in the database.", ex);
             }
         }
+        public async Task<bool> DeleteAsync(int projectId, string currentUserId)
+        {
+            var project = await _db.Projects
+                .FirstOrDefaultAsync(p => p.Id == projectId);
+
+            if (project == null) return false;
+
+            if (project.CreatorId != currentUserId) return false;
+
+            var links = await _db.ProjectUsers
+                .Where(pu => pu.ProjectId == projectId)
+                .ToListAsync();
+
+            if (links.Count > 0)
+                _db.ProjectUsers.RemoveRange(links);
+
+            _db.Projects.Remove(project);
+            await _db.SaveChangesAsync();
+
+            return true;
+        }
+
         public async Task<bool> JoinProjectAsync(int projectId, string userId)
         {
             try

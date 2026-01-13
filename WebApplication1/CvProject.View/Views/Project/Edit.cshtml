@@ -23,10 +23,31 @@
         <textarea asp-for="Description" class="form-control" rows="5"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
-
-    <button type="submit" class="btn btn-primary">Spara ändringar</button>
-    <a asp-controller="Project" asp-action="Index" class="btn btn-secondary">Tillbaka</a>
 </form>
+
+    <div class="d-flex flex-wrap gap-2 mt-4">
+        <button type="submit" class="btn btn-success">
+            Spara ändringar
+        </button>
+
+        <form asp-controller="Project"
+              asp-action="Delete"
+              asp-route-id="@Model.Id"
+              method="post"
+              class="m-0"
+              onsubmit="return confirm('Är du säker på att du vill radera projektet?');">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-outline-danger">
+                Radera projekt
+            </button>
+        </form>
+
+        <a asp-controller="Project"
+           asp-action="Index"
+           class="btn btn-secondary">
+            Tillbaka
+        </a>
+    </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
