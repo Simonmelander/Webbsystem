@@ -137,7 +137,8 @@ namespace CvProject.View.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var query = _context.Cvs.Include(c => c.User).AsQueryable();
+            var query = _context.Cvs.Include(c => c.User).Where(c => c.User.IsActive).
+                AsQueryable();
 
 
             if (!User.Identity.IsAuthenticated)
@@ -154,6 +155,7 @@ namespace CvProject.View.Controllers
             var cvQuery = _context.Cvs
                 .Include(c => c.User)
                 .Include(c => c.Skills)
+                .Where(c => c.User.IsActive)
                 .AsQueryable();
 
 
