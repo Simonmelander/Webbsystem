@@ -23,12 +23,14 @@
         <textarea asp-for="Description" class="form-control" rows="5"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
-</form>
 
     <div class="d-flex flex-wrap gap-2 mt-4">
         <button type="submit" class="btn btn-success">
             Spara ändringar
         </button>
+</form>
+
+    
 
         <form asp-controller="Project"
               asp-action="Delete"
