@@ -114,6 +114,7 @@ namespace CvProject.View.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<IActionResult> Send(string receiverId, string subject, string body, string anonymousName)
         {
             try
