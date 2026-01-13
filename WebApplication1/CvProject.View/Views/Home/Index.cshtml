@@ -3,41 +3,82 @@
 @{
     ViewData["Title"] = "Startsida";
 }
-<h2>Utvalda CV</h2>
 
-@if (Model.FeaturedCvs == null || !Model.FeaturedCvs.Any())
-{
-    <p>Inga publika CV hittades.</p>
-}
+<div class="py-4">
 
-else
-{
-    <ul>
-        @foreach (var cv in Model.FeaturedCvs)
-        {
-            <li>
-                <strong>@(cv.User?.Name ?? "Okänd användare")</strong>
-                <span> </span>
-                <a asp-controller="Cv" asp-action="Details" asp-route-id="@(cv.Id)">
-                    Gå till profil
+    <div class="card shadow-sm bg-light mb-4">
+        <div class="card-body p-4 p-md-5">
+            <h1 class="fw-bold mb-2">CV Portalen</h1>
+            <p class="text-muted mb-4">
+                Sök CV, hitta kompetenser och samarbeta i projekt.
+            </p>
+
+            <div class="d-flex flex-wrap gap-2">
+                <a asp-controller="Cv" asp-action="Index" class="btn btn-primary">
+                    Utforska CV
                 </a>
-            </li>
-        }
-    </ul>
-}
-<hr />
-
-<h2>Senast upplagda projekt</h2>
-
-@if (Model.LatestProject == null)
-{
-    <p>Inget projekt är upplagt ännu.</p>
-}
-else
-{
-    <div>
-        <h3>@Model.LatestProject.Title</h3>
-        <p>@Model.LatestProject.Description</p>
-        <p><em>Skapad: @Model.LatestProject.CreatedDate.ToString("yyyy-MM-dd HH:mm")</em></p>
+                <a asp-controller="Project" asp-action="Index" class="btn btn-outline-secondary">
+                    Utforska projekt
+                </a>
+            </div>
+        </div>
     </div>
-}
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card shadow-sm bg-light h-100">
+                <div class="card-body">
+                    <h2 class="h4 fw-bold mb-3">Utvalda CV</h2>
+
+                    @if (Model.FeaturedCvs == null || !Model.FeaturedCvs.Any())
+                    {
+                        <p class="text-muted mb-0">Inga publika CV hittades.</p>
+                    }
+                    else
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var cv in Model.FeaturedCvs)
+                            {
+                                <a asp-controller="Cv"
+                                   asp-action="Details"
+                                   asp-route-id="@cv.Id"
+                                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center bg-light">
+                                    <span class="fw-semibold">@(cv.User?.Name ?? "Okänd användare")</span>
+                                    <span class="text-muted small">Gå till profil</span>
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm bg-light h-100">
+                <div class="card-body">
+                    <h2 class="h4 fw-bold mb-3">Senast upplagda projekt</h2>
+
+                    @if (Model.LatestProject == null)
+                    {
+                        <p class="text-muted mb-0">Inget projekt är upplagt ännu.</p>
+                    }
+                    else
+                    {
+                        <h3 class="h5 fw-bold mb-1">@Model.LatestProject.Title</h3>
+                        <p class="text-muted mb-3">@Model.LatestProject.Description</p>
+                        <p class="text-muted small mb-3">
+                            Skapad: @Model.LatestProject.CreatedDate.ToString("yyyy-MM-dd HH:mm")
+                        </p>
+
+                        <a asp-controller="Project"
+                           asp-action="Details"
+                           asp-route-id="@Model.LatestProject.Id"
+                           class="btn btn-primary btn-sm">
+                            Visa projekt
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
